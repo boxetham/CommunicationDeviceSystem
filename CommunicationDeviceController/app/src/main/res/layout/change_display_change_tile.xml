@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/popup_1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#444444"
+    android:gravity="center_vertical|center_horizontal|center"
+    android:orientation="vertical"
+    android:padding="10sp">
+
+    <TextView
+        android:id="@+id/lbSelectPic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select Picture"
+        android:textSize="30sp" />
+
+    <Button
+        android:id="@+id/btCamera"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Take new picture" />
+
+    <Button
+        android:id="@+id/btGallery"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="From Gallery" />
+
+    <Button
+        android:id="@+id/btInternet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="From Internet" />
+
+    <Button
+        android:id="@+id/btNext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Next" />
+
+    <Button
+        android:id="@+id/btCancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel" />
+
+</LinearLayout>
