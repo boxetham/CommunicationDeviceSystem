@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
+import android.widget.ToggleButton;
 
 public class Settings extends AppCompatActivity {
 
@@ -16,6 +19,11 @@ public class Settings extends AppCompatActivity {
         findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 cancelGoToMain();
+            }
+        });
+        ((Switch)findViewById(R.id.swMusic)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                //send checked data
             }
         });
     }

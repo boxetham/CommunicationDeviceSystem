@@ -34,6 +34,25 @@ public class ChangeDisplay extends AppCompatActivity {
         });
         findViewById(R.id.imageView).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                popuptracker = 0;
+                ShowPopup(v, popups[popuptracker]);
+            }
+        });
+        findViewById(R.id.imageView2).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                popuptracker = 0;
+                ShowPopup(v, popups[popuptracker]);
+            }
+        });
+        findViewById(R.id.imageView3).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                popuptracker = 0;
+                ShowPopup(v, popups[popuptracker]);
+            }
+        });
+        findViewById(R.id.imageView4).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                popuptracker = 0;
                 ShowPopup(v, popups[popuptracker]);
             }
         });
@@ -51,7 +70,7 @@ public class ChangeDisplay extends AppCompatActivity {
             public void onClick(View v) {
                 myDialog.dismiss();
                 if(popuptracker != popNum){
-                    ShowPopup(v, popups[popuptracker]);
+                    ShowPopup(v, popups[popuptracker%popNum]);
                 }
             }
         });
