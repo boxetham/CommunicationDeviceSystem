@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.boxetham.communicationdevicecontroller">
 
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -16,12 +20,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ChangeDisplay" />
+        <activity android:name=".ChangeDisplay4" />
+        <activity android:name=".ChangeDisplay8" />
+        <activity android:name=".ChangeDisplay15" />
+        <activity android:name=".ChangeDisplay24" />
         <activity android:name=".Settings" />
-        <activity
-            android:name=".ChangeDisplaySetTile"
-            android:label="@string/title_activity_change_display_set_tile"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".Bluetooth"></activity>
     </application>
 
 </manifest>

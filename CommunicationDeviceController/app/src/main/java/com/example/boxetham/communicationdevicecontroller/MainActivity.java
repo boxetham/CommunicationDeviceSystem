@@ -33,6 +33,11 @@ public class MainActivity extends AppCompatActivity {
                 ShowPopup();
             }
         });
+        findViewById(R.id.btConnect).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                goToBluetooth();
+            }
+        });
     }
 
     public void ShowPopup() {
@@ -52,8 +57,13 @@ public class MainActivity extends AppCompatActivity {
         myDialog.show();
     }
 
+    private void goToBluetooth() {
+        Intent intent = new Intent(this, Bluetooth.class);
+        startActivity(intent);
+    }
+
     private void goToChangeDisplay() {
-        Intent intent = new Intent(this, ChangeDisplay.class);
+        Intent intent = new Intent(this, ChangeDisplay4.class);
         startActivity(intent);
     }
 

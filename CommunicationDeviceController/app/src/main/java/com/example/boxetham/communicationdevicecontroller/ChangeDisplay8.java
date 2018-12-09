@@ -1,20 +1,15 @@
 package com.example.boxetham.communicationdevicecontroller;
 
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.PopupWindow;
 
-public class ChangeDisplay extends AppCompatActivity {
+public class ChangeDisplay8 extends AppCompatActivity {
 
     Dialog myDialog;
     private static int[] popups = {R.layout.change_display_change_tile, R.layout.change_display_change_tile_2, R.layout.change_display_change_tile_3};
@@ -25,35 +20,32 @@ public class ChangeDisplay extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.change_display);
+        setContentView(R.layout.change_display_8);
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         myDialog = new Dialog(this);
+        findViewById(R.id.btNum4).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                goToDisplay(4);
+            }
+        });
+        findViewById(R.id.btNum8).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                goToDisplay(8);
+            }
+        });
+        findViewById(R.id.btNum15).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                goToDisplay(15);
+            }
+        });
+        findViewById(R.id.btNum24).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                goToDisplay(24);
+            }
+        });
         findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 cancelGoToMain();
-            }
-        });
-        findViewById(R.id.imageView).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                popuptracker = 0;
-                ShowPopup(v, popups[popuptracker]);
-            }
-        });
-        findViewById(R.id.imageView2).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                popuptracker = 0;
-                ShowPopup(v, popups[popuptracker]);
-            }
-        });
-        findViewById(R.id.imageView3).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                popuptracker = 0;
-                ShowPopup(v, popups[popuptracker]);
-            }
-        });
-        findViewById(R.id.imageView4).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                popuptracker = 0;
-                ShowPopup(v, popups[popuptracker]);
             }
         });
     }
@@ -80,6 +72,25 @@ public class ChangeDisplay extends AppCompatActivity {
 
     private void cancelGoToMain() {
         Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    private void goToDisplay(int numPics){
+        Intent intent = null;
+        switch (numPics){
+            case 4:
+                intent = new Intent(this, ChangeDisplay4.class);
+                break;
+            case 8:
+                intent = new Intent(this, ChangeDisplay8.class);
+                break;
+            case 15:
+                intent = new Intent(this, ChangeDisplay15.class);
+                break;
+            case 24:
+                intent = new Intent(this, ChangeDisplay24.class);
+                break;
+        }
         startActivity(intent);
     }
 }
