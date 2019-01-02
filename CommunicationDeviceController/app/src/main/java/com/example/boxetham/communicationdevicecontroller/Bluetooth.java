@@ -1,21 +1,19 @@
 package com.example.boxetham.communicationdevicecontroller;
 
-import android.app.AlertDialog;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -80,19 +78,27 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
         findViewById(R.id.buttonToggleGreenLed).setOnClickListener(this);
         findViewById(R.id.buttonToggleRedLed).setOnClickListener(this);
         findViewById(R.id.buttonToggleYellowLed).setOnClickListener(this);
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                goToMain();
+            }
+        });
 
-        _deviceListView = (ListView) findViewById(R.id.lvBtDevice);
+        _deviceListView = findViewById(R.id.lvBtDevice);
 
-        _tvBtAddress = (TextView) findViewById(R.id.tvBtAddress);
-        _tvBtName = (TextView) findViewById(R.id.tvBtName);
-        _tvBtState = (TextView) findViewById(R.id.tvBtState);
+        _tvBtAddress = findViewById(R.id.tvBtAddress);
+        _tvBtName = findViewById(R.id.tvBtName);
+        _tvBtState = findViewById(R.id.tvBtState);
+    }
+
+    private void goToMain() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 
     @Override
     public void onClick(View view) {
         final WriteRead writeRead;
-        AlertDialog.Builder builder;
-        final EditText input;
 
         switch (view.getId()) {
             case R.id.buttonDiscoveryCancel:
@@ -103,7 +109,6 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
                 break;
             case R.id.buttonToggleGreenLed:
                 writeRead = new WriteRead(_socket, "green");//GREEN_LED);
-//                writeRead = new WriteRead(_socket, songList[5]);
                 new Thread(writeRead).start();
                 break;
             case R.id.buttonToggleRedLed:
@@ -184,7 +189,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
                 _tvBtState.setText(getString(R.string.label_bt_state_connected));
                 break;
             case DISCOVERY_FINISH_STATE:
-                _btArrayAdapter = new BtArrayAdapter(getBaseContext(), _deviceList);
+                _btArrayAdapter = new BtArrayAdapter(this, _deviceList);
                 _deviceListView.setAdapter(_btArrayAdapter);
 
                 _deviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -240,23 +245,17 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
 class WriteRead implements Runnable {
     public final String LOG_TAG = getClass().getName();
 
-    //    private final MainActivity.BB_LED _led;
     private final BluetoothSocket _socket;
-    String _song;
+    String _message;
 
     private Reader _reader;
     private Writer _writer;
 
     private final StringBuilder _stringBuilder = new StringBuilder();
 
-//    WriteRead(BluetoothSocket socket, MainActivity.BB_LED led) {
-//        _socket = socket;
-//        _led = led;
-//    }
-
     WriteRead(BluetoothSocket socket, String msg) {
         _socket = socket;
-        _song = msg;
+        _message = msg;
     }
 
     public String getResponse() {
@@ -268,33 +267,26 @@ class WriteRead implements Runnable {
             _reader = new InputStreamReader(_socket.getInputStream(), "UTF-8");
             _writer = new OutputStreamWriter(_socket.getOutputStream(), "UTF-8");
 
-//            switch (_song) {
-//                case "Nocturne":
-//                    Log.i(LOG_TAG, "write Nocturne");
-//                    _writer.write(_song + "\n");
-//                    _writer.flush();
-//            }
-
-            switch(_song) {//_led) {
+            switch(_message) {
                 case "yellow":
-                    Log.i(LOG_TAG, "write vol down");
-                    _writer.write(_song + "\n");
+                    Log.i(LOG_TAG, "yellow");
+                    _writer.write(_message + "\n");
                     _writer.flush();
                     break;
                 case "green":
                     Log.i(LOG_TAG, "green");
-                    _writer.write(_song + "\n");
+                    _writer.write(_message + "\n");
                     _writer.flush();
                     break;
                 case "red":
                     Log.i(LOG_TAG, "red");
-                    _writer.write("stop\n");
+                    _writer.write(_message +"\n");
                     _writer.flush();
                     break;
                 default:
                     _writer.write("ahhhhh\n");
                     _writer.flush();
-                    _writer.write(_song + "\n");
+                    _writer.write(_message + "\n");
                     _writer.flush();
                     break;
             }

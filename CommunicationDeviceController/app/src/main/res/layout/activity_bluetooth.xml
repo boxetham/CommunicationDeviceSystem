@@ -83,12 +83,13 @@
         android:text="@string/led_green_toggle"
         app:layout_constraintTop_toBottomOf="@id/buttonToggleYellowLed"/>
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:id="@+id/controlsLayout"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_marginTop="8dp"
+        android:text="main"
+        app:layout_constraintTop_toBottomOf="@+id/buttonToggleGreenLed"
+        tools:layout_editor_absoluteX="147dp" />
 
-    </LinearLayout>
 </android.support.constraint.ConstraintLayout>

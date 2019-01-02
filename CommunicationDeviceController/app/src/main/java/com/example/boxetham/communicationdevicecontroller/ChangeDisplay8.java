@@ -12,9 +12,6 @@ import android.view.View;
 public class ChangeDisplay8 extends AppCompatActivity {
 
     Dialog myDialog;
-    private static int[] popups = {R.layout.change_display_change_tile, R.layout.change_display_change_tile_2, R.layout.change_display_change_tile_3};
-    private static int popNum = 3;
-    private int popuptracker = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -48,11 +45,18 @@ public class ChangeDisplay8 extends AppCompatActivity {
                 cancelGoToMain();
             }
         });
+        for (int i = 1; i <= 8; i++) {
+            int id = getResources().getIdentifier("imageView"+i, "id", getPackageName());
+            findViewById(id).setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    ShowCameraPopup(v);
+                }
+            });
+        }
     }
 
-    public void ShowPopup(View v, int layout) {
-        popuptracker++;
-        myDialog.setContentView(layout);
+    public void ShowCameraPopup(View v) {
+        myDialog.setContentView(R.layout.change_display_change_tile);
         myDialog.findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 myDialog.dismiss();
@@ -61,9 +65,41 @@ public class ChangeDisplay8 extends AppCompatActivity {
         myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 myDialog.dismiss();
-                if(popuptracker != popNum){
-                    ShowPopup(v, popups[popuptracker%popNum]);
-                }
+                ShowSoundPopup(v);
+            }
+        });
+        myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        myDialog.show();
+    }
+
+    public void ShowSoundPopup(View v) {
+        myDialog.setContentView(R.layout.change_display_change_tile_2);
+        myDialog.findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                myDialog.dismiss();
+            }
+        });
+        myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                myDialog.dismiss();
+                ShowTextPopup(v);
+            }
+        });
+        myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        myDialog.show();
+    }
+
+    public void ShowTextPopup(View v) {
+        myDialog.setContentView(R.layout.change_display_change_tile_3);
+        myDialog.findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                myDialog.dismiss();
+            }
+        });
+        myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                myDialog.dismiss();
+
             }
         });
         myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
