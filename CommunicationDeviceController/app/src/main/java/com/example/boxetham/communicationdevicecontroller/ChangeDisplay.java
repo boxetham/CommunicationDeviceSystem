@@ -24,7 +24,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -33,13 +32,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class ChangeDisplay4 extends AppCompatActivity {
+public class ChangeDisplay extends AppCompatActivity {
 
     Dialog myDialog;
     private static final int RECORD_AUDIO = 3;
     private static final int CHOOSE_PICTURE = 2;
     private static final int TAKE_PICTURE = 1;
-    private static final int numPics = 4;
+    private static int numPictures = 4;
     private int imageViewID = 0;
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
@@ -55,9 +54,10 @@ public class ChangeDisplay4 extends AppCompatActivity {
         if(savedInstanceState != null){
             imageViewID = savedInstanceState.getInt("imageViewID");
         }else{
-            imageViewID = R.id.imageView1;
+            imageViewID = getResources().getIdentifier("image" + numPictures + "View" + 1, "id", getPackageName());
         }
-        setContentView(R.layout.change_display_4);
+        setContentView(R.layout.change_display);
+        goToDisplay(numPictures);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         myDialog = new Dialog(this);
         findViewById(R.id.btNum4).setOnClickListener(new View.OnClickListener() {
@@ -85,8 +85,8 @@ public class ChangeDisplay4 extends AppCompatActivity {
                 cancelGoToMain();
             }
         });
-        for (int i = 1; i <= numPics; i++) {
-            int id = getResources().getIdentifier("imageView" + i, "id", getPackageName());
+        for (int i = 1; i <= numPictures; i++) {
+            int id = getResources().getIdentifier("image" + numPictures + "View" + i, "id", getPackageName());
             final int finalI = i;
             findViewById(id).setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -104,7 +104,7 @@ public class ChangeDisplay4 extends AppCompatActivity {
 
     private void ShowCameraPopup(int id) {
         myDialog.setContentView(R.layout.change_display_change_tile);
-        imageViewID = getResources().getIdentifier("imageView" + id, "id", getPackageName());
+        imageViewID = getResources().getIdentifier("image" + numPictures + "View" + id, "id", getPackageName());
         myDialog.findViewById(R.id.btCamera).setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             public void onClick(View v) {
@@ -260,22 +260,57 @@ public class ChangeDisplay4 extends AppCompatActivity {
     }
 
     private void goToDisplay(int numPics){
-        Intent intent = null;
+        numPictures = numPics;
+        this.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                findViewById(R.id.images4).setVisibility(View.INVISIBLE);
+            } });
+        this.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                findViewById(R.id.images8).setVisibility(View.INVISIBLE);
+            } });
+        this.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                findViewById(R.id.images15).setVisibility(View.INVISIBLE);
+            } });
+        this.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                findViewById(R.id.images24).setVisibility(View.INVISIBLE);
+            } });
         switch (numPics){
             case 4:
-                intent = new Intent(this, ChangeDisplay4.class);
+                this.runOnUiThread(new Runnable(){
+                    @Override
+                    public void run() {
+                        findViewById(R.id.images4).setVisibility(View.VISIBLE);
+                    } });
                 break;
             case 8:
-                intent = new Intent(this, ChangeDisplay8.class);
+                this.runOnUiThread(new Runnable(){
+                    @Override
+                    public void run() {
+                        findViewById(R.id.images8).setVisibility(View.VISIBLE);
+                    } });
                 break;
             case 15:
-                intent = new Intent(this, ChangeDisplay15.class);
+                this.runOnUiThread(new Runnable(){
+                    @Override
+                    public void run() {
+                        findViewById(R.id.images15).setVisibility(View.VISIBLE);
+                    } });
                 break;
             case 24:
-                intent = new Intent(this, ChangeDisplay24.class);
+                this.runOnUiThread(new Runnable(){
+                    @Override
+                    public void run() {
+                        findViewById(R.id.images24).setVisibility(View.VISIBLE);
+                    } });
                 break;
         }
-        startActivity(intent);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)

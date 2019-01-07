@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void goToChangeDisplay() {
-        Intent intent = new Intent(this, ChangeDisplay4.class);
+        Intent intent = new Intent(this, ChangeDisplay.class);
         startActivity(intent);
     }
 

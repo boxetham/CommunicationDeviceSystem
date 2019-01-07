@@ -22,15 +22,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ChangeDisplay4" >
+        <activity android:name=".ChangeDisplay" >
             <intent-filter>
                 <action android:name="android.media.action.IMAGE_CAPTURE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".ChangeDisplay8" />
-        <activity android:name=".ChangeDisplay15" />
-        <activity android:name=".ChangeDisplay24" />
         <activity android:name=".Settings" />
         <activity android:name=".Bluetooth" />
     </application>
