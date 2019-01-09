@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -31,6 +33,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 public class ChangeDisplay extends AppCompatActivity {
 
@@ -105,8 +108,13 @@ public class ChangeDisplay extends AppCompatActivity {
         myDialog.findViewById(R.id.btCamera).setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             public void onClick(View v) {
+                myDialog.dismiss();
                 if(checkPermissions(TAKE_PICTURE) != 1) {
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    File file  = getPhotoFileUri("image.jpg");
+                    //Uri uri = FileProvider.getUriForFile(ChangeDisplay.this, "com.codepath.fileprovider", file);
+                    URI uri = file.toURI();
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
                     if (intent.resolveActivity(getPackageManager()) != null) {
                         startActivityForResult(intent, TAKE_PICTURE);
                     }
@@ -117,6 +125,7 @@ public class ChangeDisplay extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
+                myDialog.dismiss();
                 Intent choosePictureIntent = new Intent(Intent.ACTION_PICK,
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 if (choosePictureIntent.resolveActivity(getPackageManager()) != null) {
@@ -294,38 +303,14 @@ public class ChangeDisplay extends AppCompatActivity {
                     Bitmap imageBitmap = (Bitmap) extras.get("data");
                     ImageView imageView = (ImageView) findViewById(imageViewID);
                     imageView.setImageBitmap(imageBitmap);
-                    myDialog.dismiss();
+                    MediaScannerConnection.scanFile(this, new String[] { getPhotoFileUri("image.jpg").getAbsolutePath()}, null,
+                            new MediaScannerConnection.OnScanCompletedListener() {
+                                @Override
+                                public void onScanCompleted(String path, Uri uri) {
+                                    Log.i("", "Scanned " + path);
+                                }
+                            });
                     ShowSoundPopup();
-
-//                    MediaStore.Images.Media.insertImage(getContentResolver(), imageBitmap, "fun" , "fun in the sun");
-
-
-//                    String filename = "image.png";
-//                    File sd = getPublicAlbumStorageDir("CommicationDevice");
-//                    File dest = new File(sd, filename);
-//                    try {
-//                        FileOutputStream out = new FileOutputStream(dest);
-//                        imageBitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
-//                        out.flush();
-//                        out.close();
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-
-//                    ContextWrapper wrapper = new ContextWrapper(getApplicationContext());
-//                    File file = wrapper.getDir("Images",MODE_PRIVATE);
-//                    file = new File(file, "UniqueFileName"+".jpg");
-//
-//                    try{
-//                        OutputStream stream = new FileOutputStream(file);
-//                        imageBitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
-//                        stream.flush();
-//                        stream.close();
-//
-//                    }catch (IOException e) // Catch the exception
-//                    {
-//                        e.printStackTrace();
-//                    }
                 }
                 break;
             case CHOOSE_PICTURE:
@@ -336,25 +321,21 @@ public class ChangeDisplay extends AppCompatActivity {
                         Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
                         ImageView imageView = (ImageView) findViewById(imageViewID);
                         imageView.setImageBitmap(imageBitmap);
-                        myDialog.dismiss();
                         ShowSoundPopup();
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
                 }
                 break;
-            case RECORD_AUDIO:
-
         }
     }
 
-    public File getPublicAlbumStorageDir(String albumName) {
-        // Get the directory for the user's public pictures directory.
-        File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), albumName);
-        if (!file.mkdirs()) {
-            //sad
+    public File getPhotoFileUri(String fileName) {
+        File mediaStorageDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "CommunicationDevice");
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+            Log.d("", "failed to create directory");
         }
+        File file = new File(mediaStorageDir.getPath() + File.separator + fileName);
         return file;
     }
 }
