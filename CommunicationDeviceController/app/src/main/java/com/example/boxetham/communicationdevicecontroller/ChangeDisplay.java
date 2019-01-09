@@ -2,11 +2,15 @@ package com.example.boxetham.communicationdevicecontroller;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -34,49 +38,58 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChangeDisplay extends AppCompatActivity {
 
     Dialog myDialog;
+    private static final int CROP_FROM_CAMERA = 4;
     private static final int RECORD_AUDIO = 3;
     private static final int CHOOSE_PICTURE = 2;
     private static final int TAKE_PICTURE = 1;
     private static int numPictures = 4;
     private int imageViewID = 0;
     private SoundRecording recorder = null;
+    private Uri mImageCaptureUri = null;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.change_display);
         setNumberOfPictures(numPictures);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         myDialog = new Dialog(this);
         recorder = new SoundRecording(this);
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             imageViewID = savedInstanceState.getInt("imageViewID");
-        }else{
+        } else {
             imageViewID = getResources().getIdentifier("image" + numPictures + "View" + 1, "id", getPackageName());
         }
         findViewById(R.id.btNum4).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { setNumberOfPictures(4); }
+            public void onClick(View v) {
+                setNumberOfPictures(4);
+            }
         });
         findViewById(R.id.btNum8).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { setNumberOfPictures(8);
+            public void onClick(View v) {
+                setNumberOfPictures(8);
             }
         });
         findViewById(R.id.btNum15).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { setNumberOfPictures(15);
+            public void onClick(View v) {
+                setNumberOfPictures(15);
             }
         });
         findViewById(R.id.btNum24).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { setNumberOfPictures(24);
+            public void onClick(View v) {
+                setNumberOfPictures(24);
             }
         });
         findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { cancelGoToMain();
+            public void onClick(View v) {
+                cancelGoToMain();
             }
         });
         setupImageViews(24);
@@ -85,12 +98,13 @@ public class ChangeDisplay extends AppCompatActivity {
         setupImageViews(4);
     }
 
-    public void setupImageViews(int numPics){
+    public void setupImageViews(int numPics) {
         for (int i = 1; i <= numPics; i++) {
             int id = getResources().getIdentifier("image" + numPics + "View" + i, "id", getPackageName());
             final int finalI = i;
             findViewById(id).setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) { ShowCameraPopup(finalI);
+                public void onClick(View v) {
+                    ShowCameraPopup(finalI);
                 }
             });
         }
@@ -109,10 +123,9 @@ public class ChangeDisplay extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             public void onClick(View v) {
                 myDialog.dismiss();
-                if(checkPermissions(TAKE_PICTURE) != 1) {
+                if (checkPermissions(TAKE_PICTURE) != 1) {
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    File file  = getPhotoFileUri("image.jpg");
-                    //Uri uri = FileProvider.getUriForFile(ChangeDisplay.this, "com.codepath.fileprovider", file);
+                    File file = getPhotoFileUri("image.jpg");
                     URI uri = file.toURI();
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
                     if (intent.resolveActivity(getPackageManager()) != null) {
@@ -121,7 +134,7 @@ public class ChangeDisplay extends AppCompatActivity {
                 }
             }
         });
-        myDialog.findViewById(R.id.btGallery).setOnClickListener(new View.OnClickListener(){
+        myDialog.findViewById(R.id.btGallery).setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -154,7 +167,7 @@ public class ChangeDisplay extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View v) {
-                if(checkPermissions(RECORD_AUDIO) != 1) {
+                if (checkPermissions(RECORD_AUDIO) != 1) {
                     SoundRecording.RecordButton mRecordButton = recorder.getRecordButton(myDialog.getContext());
                     LinearLayout ll = myDialog.findViewById(R.id.layout);
                     ll.addView(mRecordButton, new LinearLayout.LayoutParams(
@@ -209,51 +222,71 @@ public class ChangeDisplay extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void setNumberOfPictures(int numPics){
+    private void setNumberOfPictures(int numPics) {
         numPictures = numPics;
-        this.runOnUiThread(new Runnable(){
+        this.runOnUiThread(new Runnable() {
             @Override
-            public void run() { findViewById(R.id.images4).setVisibility(View.INVISIBLE);
-            } });
-        this.runOnUiThread(new Runnable(){
+            public void run() {
+                findViewById(R.id.images4).setVisibility(View.INVISIBLE);
+            }
+        });
+        this.runOnUiThread(new Runnable() {
             @Override
-            public void run() { findViewById(R.id.images8).setVisibility(View.INVISIBLE);
-            } });
-        this.runOnUiThread(new Runnable(){
+            public void run() {
+                findViewById(R.id.images8).setVisibility(View.INVISIBLE);
+            }
+        });
+        this.runOnUiThread(new Runnable() {
             @Override
-            public void run() { findViewById(R.id.images15).setVisibility(View.INVISIBLE);
-            } });
-        this.runOnUiThread(new Runnable(){
+            public void run() {
+                findViewById(R.id.images15).setVisibility(View.INVISIBLE);
+            }
+        });
+        this.runOnUiThread(new Runnable() {
             @Override
-            public void run() { findViewById(R.id.images24).setVisibility(View.INVISIBLE);
-            } });
-        switch (numPics){
+            public void run() {
+                findViewById(R.id.images24).setVisibility(View.INVISIBLE);
+            }
+        });
+        switch (numPics) {
             case 4:
-                this.runOnUiThread(new Runnable(){
+                this.runOnUiThread(new Runnable() {
                     @Override
-                    public void run() { findViewById(R.id.images4).setVisibility(View.VISIBLE); } });
+                    public void run() {
+                        findViewById(R.id.images4).setVisibility(View.VISIBLE);
+                    }
+                });
                 break;
             case 8:
-                this.runOnUiThread(new Runnable(){
+                this.runOnUiThread(new Runnable() {
                     @Override
-                    public void run() { findViewById(R.id.images8).setVisibility(View.VISIBLE); } });
+                    public void run() {
+                        findViewById(R.id.images8).setVisibility(View.VISIBLE);
+                    }
+                });
                 break;
             case 15:
-                this.runOnUiThread(new Runnable(){
+                this.runOnUiThread(new Runnable() {
                     @Override
-                    public void run() { findViewById(R.id.images15).setVisibility(View.VISIBLE); } });
+                    public void run() {
+                        findViewById(R.id.images15).setVisibility(View.VISIBLE);
+                    }
+                });
                 break;
             case 24:
-                this.runOnUiThread(new Runnable(){
+                this.runOnUiThread(new Runnable() {
                     @Override
-                    public void run() { findViewById(R.id.images24).setVisibility(View.VISIBLE); } });
+                    public void run() {
+                        findViewById(R.id.images24).setVisibility(View.VISIBLE);
+                    }
+                });
                 break;
         }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private int checkPermissions(int permission) {
-        switch (permission){
+        switch (permission) {
             case TAKE_PICTURE:
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, TAKE_PICTURE);
@@ -303,36 +336,121 @@ public class ChangeDisplay extends AppCompatActivity {
                     Bitmap imageBitmap = (Bitmap) extras.get("data");
                     ImageView imageView = (ImageView) findViewById(imageViewID);
                     imageView.setImageBitmap(imageBitmap);
-                    MediaScannerConnection.scanFile(this, new String[] { getPhotoFileUri("image.jpg").getAbsolutePath()}, null,
+                    MediaScannerConnection.scanFile(this, new String[]{getPhotoFileUri("image.jpg").getAbsolutePath()}, null,
                             new MediaScannerConnection.OnScanCompletedListener() {
                                 @Override
-                                public void onScanCompleted(String path, Uri uri) {
-                                    Log.i("", "Scanned " + path);
+                                public void onScanCompleted(String path, Uri uri) { Log.i("", "Scanned " + path);
                                 }
                             });
-                    ShowSoundPopup();
+//                    doCrop();
                 }
                 break;
             case CHOOSE_PICTURE:
                 if (resultCode == Activity.RESULT_OK) {
                     try {
                         Uri imageUri = data.getData();
+                        mImageCaptureUri =  imageUri;
                         InputStream imageStream = getContentResolver().openInputStream(imageUri);
                         Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
                         ImageView imageView = (ImageView) findViewById(imageViewID);
                         imageView.setImageBitmap(imageBitmap);
-                        ShowSoundPopup();
+                        doCrop();
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
                 }
                 break;
+            case CROP_FROM_CAMERA:
+                Bundle extras = data.getExtras();
+
+                if (extras != null) {
+                    Bitmap photo = extras.getParcelable("data");
+                    ImageView imageView = (ImageView) findViewById(imageViewID);
+                    imageView.setImageBitmap(photo);
+                    ShowSoundPopup();
+                }
+
+                File f = new File(mImageCaptureUri.getPath());
+
+                if (f.exists()) f.delete();
+                break;
+        }
+    }
+
+    private void doCrop() {
+        final ArrayList<CropOption> cropOptions = new ArrayList<CropOption>();
+
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setType("image/*");
+
+        List<ResolveInfo> list = getPackageManager().queryIntentActivities(intent, 0);
+
+        int size = list.size();
+
+        if (size == 0) {
+            //sad
+            return;
+        } else {
+            intent.setData(mImageCaptureUri);
+
+            intent.putExtra("outputX", 200);
+            intent.putExtra("outputY", 200);
+            intent.putExtra("aspectX", 1);
+            intent.putExtra("aspectY", 1);
+            intent.putExtra("scale", true);
+            intent.putExtra("return-data", true);
+
+            if (size == 1) {
+                Intent i = new Intent(intent);
+                ResolveInfo res = list.get(0);
+
+                i.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+
+                startActivityForResult(i, CROP_FROM_CAMERA);
+            } else {
+                for (ResolveInfo res : list) {
+                    final CropOption co = new CropOption();
+
+                    co.title = getPackageManager().getApplicationLabel(res.activityInfo.applicationInfo);
+                    co.icon = getPackageManager().getApplicationIcon(res.activityInfo.applicationInfo);
+                    co.appIntent = new Intent(intent);
+
+                    co.appIntent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+
+                    cropOptions.add(co);
+                }
+
+                CropOptionAdapter adapter = new CropOptionAdapter(getApplicationContext(), cropOptions);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Choose Crop App");
+                builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int item) {
+                        startActivityForResult(cropOptions.get(item).appIntent, CROP_FROM_CAMERA);
+                    }
+                });
+
+                builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+
+                        if (mImageCaptureUri != null) {
+                            getContentResolver().delete(mImageCaptureUri, null, null);
+                            mImageCaptureUri = null;
+                        }
+                    }
+                });
+
+                AlertDialog alert = builder.create();
+
+                alert.show();
+            }
         }
     }
 
     public File getPhotoFileUri(String fileName) {
         File mediaStorageDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "CommunicationDevice");
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
             Log.d("", "failed to create directory");
         }
         File file = new File(mediaStorageDir.getPath() + File.separator + fileName);
