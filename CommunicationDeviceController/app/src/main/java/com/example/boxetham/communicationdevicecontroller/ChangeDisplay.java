@@ -40,57 +40,54 @@ public class ChangeDisplay extends AppCompatActivity {
     private static final int TAKE_PICTURE = 1;
     private static int numPictures = 4;
     private int imageViewID = 0;
-    private MediaRecorder mRecorder = null;
-    private MediaPlayer mPlayer = null;
-    private RecordButton mRecordButton = null;
-    private PlayButton   mPlayButton = null;
-    private static String mFileName = null;
+    private SoundRecording recorder = null;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.change_display);
+        setNumberOfPictures(numPictures);
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        myDialog = new Dialog(this);
+        recorder = new SoundRecording(this);
         if(savedInstanceState != null){
             imageViewID = savedInstanceState.getInt("imageViewID");
         }else{
             imageViewID = getResources().getIdentifier("image" + numPictures + "View" + 1, "id", getPackageName());
         }
-        setContentView(R.layout.change_display);
-        goToDisplay(numPictures);
-        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        myDialog = new Dialog(this);
         findViewById(R.id.btNum4).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                goToDisplay(4);
-            }
+            public void onClick(View v) { setNumberOfPictures(4); }
         });
         findViewById(R.id.btNum8).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                goToDisplay(8);
+            public void onClick(View v) { setNumberOfPictures(8);
             }
         });
         findViewById(R.id.btNum15).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                goToDisplay(15);
+            public void onClick(View v) { setNumberOfPictures(15);
             }
         });
         findViewById(R.id.btNum24).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                goToDisplay(24);
+            public void onClick(View v) { setNumberOfPictures(24);
             }
         });
         findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                cancelGoToMain();
+            public void onClick(View v) { cancelGoToMain();
             }
         });
-        for (int i = 1; i <= numPictures; i++) {
-            int id = getResources().getIdentifier("image" + numPictures + "View" + i, "id", getPackageName());
+        setupImageViews(24);
+        setupImageViews(15);
+        setupImageViews(8);
+        setupImageViews(4);
+    }
+
+    public void setupImageViews(int numPics){
+        for (int i = 1; i <= numPics; i++) {
+            int id = getResources().getIdentifier("image" + numPics + "View" + i, "id", getPackageName());
             final int finalI = i;
             findViewById(id).setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    ShowCameraPopup(finalI);
+                public void onClick(View v) { ShowCameraPopup(finalI);
                 }
             });
         }
@@ -149,19 +146,17 @@ public class ChangeDisplay extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(checkPermissions(RECORD_AUDIO) != 1) {
-                    mFileName = getExternalCacheDir().getAbsolutePath();
-                    mFileName += "/audiorecordtest.3gp";
-                    mRecordButton = new RecordButton(myDialog.getContext());
+                    SoundRecording.RecordButton mRecordButton = recorder.getRecordButton(myDialog.getContext());
                     LinearLayout ll = myDialog.findViewById(R.id.layout);
                     ll.addView(mRecordButton, new LinearLayout.LayoutParams(
-                                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                                    0));
-                    mPlayButton = new PlayButton(myDialog.getContext());
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            0));
+                    SoundRecording.PlayButton mPlayButton = recorder.getPlayButton(myDialog.getContext());
                     ll.addView(mPlayButton, new LinearLayout.LayoutParams(
-                                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                                    0));
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            0));
                     myDialog.findViewById(R.id.btMicrophone).setVisibility(View.GONE);
                     myDialog.findViewById(R.id.btGallery).setVisibility(View.GONE);
                     myDialog.findViewById(R.id.btInternet).setVisibility(View.GONE);
@@ -181,60 +176,6 @@ public class ChangeDisplay extends AppCompatActivity {
         });
         myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         myDialog.show();
-    }
-
-    private void onRecord(boolean start) {
-        if (start) {
-            startRecording();
-        } else {
-            stopRecording();
-        }
-    }
-
-    private void onPlay(boolean start) {
-        if (start) {
-            startPlaying();
-        } else {
-            stopPlaying();
-        }
-    }
-
-    private void startPlaying() {
-        mPlayer = new MediaPlayer();
-        try {
-            mPlayer.setDataSource(mFileName);
-            mPlayer.prepare();
-            mPlayer.start();
-        } catch (IOException e) {
-            Log.e("auido fail", "prepare() failed");
-        }
-    }
-
-    private void stopPlaying() {
-        mPlayer.release();
-        mPlayer = null;
-    }
-
-    private void startRecording() {
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(mFileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            Log.e("audio fail", "prepare() failed");
-        }
-
-        mRecorder.start();
-    }
-
-    private void stopRecording() {
-        mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
     }
 
     private void ShowTextPopup(View v) {
@@ -259,56 +200,44 @@ public class ChangeDisplay extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void goToDisplay(int numPics){
+    private void setNumberOfPictures(int numPics){
         numPictures = numPics;
         this.runOnUiThread(new Runnable(){
             @Override
-            public void run() {
-                findViewById(R.id.images4).setVisibility(View.INVISIBLE);
+            public void run() { findViewById(R.id.images4).setVisibility(View.INVISIBLE);
             } });
         this.runOnUiThread(new Runnable(){
             @Override
-            public void run() {
-                findViewById(R.id.images8).setVisibility(View.INVISIBLE);
+            public void run() { findViewById(R.id.images8).setVisibility(View.INVISIBLE);
             } });
         this.runOnUiThread(new Runnable(){
             @Override
-            public void run() {
-                findViewById(R.id.images15).setVisibility(View.INVISIBLE);
+            public void run() { findViewById(R.id.images15).setVisibility(View.INVISIBLE);
             } });
         this.runOnUiThread(new Runnable(){
             @Override
-            public void run() {
-                findViewById(R.id.images24).setVisibility(View.INVISIBLE);
+            public void run() { findViewById(R.id.images24).setVisibility(View.INVISIBLE);
             } });
         switch (numPics){
             case 4:
                 this.runOnUiThread(new Runnable(){
                     @Override
-                    public void run() {
-                        findViewById(R.id.images4).setVisibility(View.VISIBLE);
-                    } });
+                    public void run() { findViewById(R.id.images4).setVisibility(View.VISIBLE); } });
                 break;
             case 8:
                 this.runOnUiThread(new Runnable(){
                     @Override
-                    public void run() {
-                        findViewById(R.id.images8).setVisibility(View.VISIBLE);
-                    } });
+                    public void run() { findViewById(R.id.images8).setVisibility(View.VISIBLE); } });
                 break;
             case 15:
                 this.runOnUiThread(new Runnable(){
                     @Override
-                    public void run() {
-                        findViewById(R.id.images15).setVisibility(View.VISIBLE);
-                    } });
+                    public void run() { findViewById(R.id.images15).setVisibility(View.VISIBLE); } });
                 break;
             case 24:
                 this.runOnUiThread(new Runnable(){
                     @Override
-                    public void run() {
-                        findViewById(R.id.images24).setVisibility(View.VISIBLE);
-                    } });
+                    public void run() { findViewById(R.id.images24).setVisibility(View.VISIBLE); } });
                 break;
         }
     }
@@ -427,49 +356,5 @@ public class ChangeDisplay extends AppCompatActivity {
             //sad
         }
         return file;
-    }
-
-    class RecordButton extends android.support.v7.widget.AppCompatButton {
-        boolean mStartRecording = true;
-
-        OnClickListener clicker = new OnClickListener() {
-            public void onClick(View v) {
-                onRecord(mStartRecording);
-                if (mStartRecording) {
-                    setText("Stop recording");
-                } else {
-                    setText("Start recording");
-                }
-                mStartRecording = !mStartRecording;
-            }
-        };
-
-        public RecordButton(Context ctx) {
-            super(ctx);
-            setText("Start recording");
-            setOnClickListener(clicker);
-        }
-    }
-
-    class PlayButton extends android.support.v7.widget.AppCompatButton {
-        boolean mStartPlaying = true;
-
-        OnClickListener clicker = new OnClickListener() {
-            public void onClick(View v) {
-                onPlay(mStartPlaying);
-                if (mStartPlaying) {
-                    setText("Stop playing");
-                } else {
-                    setText("Start playing");
-                }
-                mStartPlaying = !mStartPlaying;
-            }
-        };
-
-        public PlayButton(Context ctx) {
-            super(ctx);
-            setText("Start playing");
-            setOnClickListener(clicker);
-        }
     }
 }
