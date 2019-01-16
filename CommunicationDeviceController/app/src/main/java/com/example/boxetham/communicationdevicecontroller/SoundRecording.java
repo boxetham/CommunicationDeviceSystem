@@ -7,12 +7,14 @@ import android.util.Log;
 import android.view.View;
 
 import java.io.IOException;
+import java.net.URL;
 
 public class SoundRecording {
 
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
     private static String mFileName = null;
+    private boolean isPLAYING = false;
 
     public SoundRecording(Context context){
         mFileName = context.getExternalCacheDir().getAbsolutePath();
@@ -39,6 +41,17 @@ public class SoundRecording {
         mPlayer = new MediaPlayer();
         try {
             mPlayer.setDataSource(mFileName);
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            Log.e("auido fail", "prepare() failed");
+        }
+    }
+
+    public void startPlaying(String fileName) {
+        mPlayer = new MediaPlayer();
+        try {
+            mPlayer.setDataSource(fileName);
             mPlayer.prepare();
             mPlayer.start();
         } catch (IOException e) {

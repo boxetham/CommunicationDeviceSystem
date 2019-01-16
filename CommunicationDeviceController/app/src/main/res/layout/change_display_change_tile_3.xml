@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:background="#444444"
     android:gravity="center_vertical|center_horizontal|center"
+    android:minWidth="400dp"
     android:orientation="vertical"
     android:padding="10sp">
 
@@ -13,24 +14,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Type text to go with picture"
-        android:textSize="30sp" />
+        android:textSize="30sp"
+        android:textColor="#FFFFFF"/>
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/txtInput"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF">
 
         <android.support.design.widget.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="                         Start typing here                         " />
+            android:hint="                         Start typing here                         "
+            android:textColor="#FFFFFF"/>
     </android.support.design.widget.TextInputLayout>
 
     <Button
         android:id="@+id/btNext"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Next" />
+        android:text="Submit" />
 
     <Button
         android:id="@+id/btCancel"

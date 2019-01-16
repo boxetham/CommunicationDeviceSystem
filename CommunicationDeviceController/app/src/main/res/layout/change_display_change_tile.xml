@@ -13,7 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Select Picture"
-        android:textSize="30sp" />
+        android:textSize="30sp"
+        android:textColor="#FFFFFF"/>
 
     <Button
         android:id="@+id/btCamera"
@@ -26,18 +27,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="From Gallery" />
-
-    <Button
-        android:id="@+id/btInternet"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="From Internet" />
-
-    <Button
-        android:id="@+id/btNext"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Next" />
 
     <Button
         android:id="@+id/btCancel"
