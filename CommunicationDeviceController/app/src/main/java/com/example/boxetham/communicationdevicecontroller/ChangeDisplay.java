@@ -2,53 +2,35 @@ package com.example.boxetham.communicationdevicecontroller;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.text.Editable;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
@@ -59,8 +41,9 @@ public class ChangeDisplay extends AppCompatActivity {
     private static final int RECORD_AUDIO = 3;
     private static final int CHOOSE_PICTURE = 2;
     private static final int TAKE_PICTURE = 1;
-    private static int numPictures = 4;
+    private static int numPictures;
     private int imageViewID = 0;
+    private int labelID = 0;
     private SoundRecording recorder = null;
     private Pictures pictureSettings = null;
 
@@ -68,49 +51,66 @@ public class ChangeDisplay extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.change_display);
-        setNumberOfPictures(numPictures);
+        setContentView(R.layout.activity_change_display);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        setValues(savedInstanceState);
+        configureButtons();
+        setupImageViews();
+    }
+
+    private void setValues(Bundle savedInstanceState) {
+        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
+        numPictures = prefs.getInt("numPictures", 4);
+        if (savedInstanceState != null) {
+            imageViewID = savedInstanceState.getInt("imageViewID");
+            labelID = savedInstanceState.getInt("labelID");
+        } else {
+            imageViewID = getResources().getIdentifier("image" + numPictures + "View" + 1, "id", getPackageName());
+            labelID = getResources().getIdentifier("lb" + numPictures + "Cpt" + 1, "id", getPackageName());
+        }
         myDialog = new Dialog(this);
         recorder = new SoundRecording(this);
         pictureSettings = new Pictures(this, this);
-        if (savedInstanceState != null) {
-            imageViewID = savedInstanceState.getInt("imageViewID");
-        } else {
-            imageViewID = getResources().getIdentifier("image" + numPictures + "View" + 1, "id", getPackageName());
-        }
+    }
+
+    private void configureButtons() {
         findViewById(R.id.btNum4).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                setNumberOfPictures(4);
+            public void onClick(View v) { setNumberOfPictures(4);
             }
         });
         findViewById(R.id.btNum8).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                setNumberOfPictures(8);
+            public void onClick(View v) { setNumberOfPictures(8);
             }
         });
         findViewById(R.id.btNum15).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                setNumberOfPictures(15);
+            public void onClick(View v) { setNumberOfPictures(15);
             }
         });
         findViewById(R.id.btNum24).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                setNumberOfPictures(24);
+            public void onClick(View v) { setNumberOfPictures(24);
             }
         });
         findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                cancelGoToMain();
+            public void onClick(View v) { goToMain();
             }
         });
-        setupImageViews(24);
-        setupImageViews(15);
-        setupImageViews(8);
-        setupImageViews(4);
+        findViewById(R.id.btUpload).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveGoToMain();
+            }
+        });
     }
 
-    public void setupImageViews(int numPics) {
+    private void setupImageViews(){
+        setNumberOfPictures(numPictures);
+        setupImageViewsHelper(24);
+        setupImageViewsHelper(15);
+        setupImageViewsHelper(8);
+        setupImageViewsHelper(4);
+    }
+
+    private void setupImageViewsHelper(int numPics) {
         for (int i = 1; i <= numPics; i++) {
             int id = getResources().getIdentifier("image" + numPics + "View" + i, "id", getPackageName());
             final int finalI = i;
@@ -122,24 +122,17 @@ public class ChangeDisplay extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putInt("imageViewID", imageViewID);
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
     private void ShowCameraPopup(int id) {
-        myDialog.setContentView(R.layout.change_display_change_tile);
+        myDialog.setContentView(R.layout.popup_choose_picture);
         imageViewID = getResources().getIdentifier("image" + numPictures + "View" + id, "id", getPackageName());
+        labelID = getResources().getIdentifier("lb" + numPictures + "Cpt" + id, "id", getPackageName());
         myDialog.findViewById(R.id.btCamera).setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             public void onClick(View v) {
                 myDialog.dismiss();
                 if (checkPermissions(TAKE_PICTURE) != 1) {
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    File file = pictureSettings.createImageFile();
-                    URI uri = file.toURI();
-                    pictureSettings.setImageURI(android.net.Uri.parse(uri.toString()));
+                    URI uri = pictureSettings.createImageFile().toURI();
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
                     intent.addFlags(FLAG_GRANT_WRITE_URI_PERMISSION);
                     if (intent.resolveActivity(getPackageManager()) != null) {
@@ -153,8 +146,7 @@ public class ChangeDisplay extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 myDialog.dismiss();
-                Intent choosePictureIntent = new Intent(Intent.ACTION_PICK,
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                Intent choosePictureIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 if (choosePictureIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(choosePictureIntent, CHOOSE_PICTURE);
                 }
@@ -170,28 +162,13 @@ public class ChangeDisplay extends AppCompatActivity {
     }
 
     private void ShowSoundPopup() {
-        myDialog.setContentView(R.layout.change_display_change_tile_2);
+        myDialog.setContentView(R.layout.popup_choose_sound);
         myDialog.findViewById(R.id.btMicrophone).setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View v) {
                 if (checkPermissions(RECORD_AUDIO) != 1) {
-                    SoundRecording.RecordButton mRecordButton = recorder.getRecordButton(myDialog.getContext());
-                    LinearLayout ll = myDialog.findViewById(R.id.layout);
-                    ll.addView(mRecordButton, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            0));
-                    SoundRecording.PlayButton mPlayButton = recorder.getPlayButton(myDialog.getContext());
-                    ll.addView(mPlayButton, new LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            0));
-                    myDialog.addContentView(getNextButton(),new RelativeLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT));
-                    myDialog.findViewById(R.id.btMicrophone).setVisibility(View.GONE);
-                    myDialog.findViewById(R.id.btGallery).setVisibility(View.GONE);
+                    configureSoundButtons();
                 }
             }
         });
@@ -210,21 +187,35 @@ public class ChangeDisplay extends AppCompatActivity {
         myDialog.show();
     }
 
-    private View getNextButton() {
-        Button button = new Button(this);
-        button.setText("Next");
-        button.setOnClickListener(new View.OnClickListener(){
+    private void configureSoundButtons() {
+        SoundRecording.RecordButton mRecordButton = recorder.getRecordButton(myDialog.getContext());
+        LinearLayout ll = myDialog.findViewById(R.id.layout);
+        ll.addView(mRecordButton, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                0));
+        SoundRecording.PlayButton mPlayButton = recorder.getPlayButton(myDialog.getContext());
+        ll.addView(mPlayButton, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                0));
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() { myDialog.findViewById(R.id.btNext).setVisibility(View.VISIBLE);}
+        });
+        myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 myDialog.dismiss();
                 ShowTextPopup();
             }
         });
-        return button;
+        myDialog.findViewById(R.id.btMicrophone).setVisibility(View.GONE);
+        myDialog.findViewById(R.id.btGallery).setVisibility(View.GONE);
     }
 
     private void ShowTextPopup() {
-        myDialog.setContentView(R.layout.change_display_change_tile_3);
+        myDialog.setContentView(R.layout.popup_choose_text);
         myDialog.findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 myDialog.dismiss();
@@ -232,17 +223,30 @@ public class ChangeDisplay extends AppCompatActivity {
         });
         myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                EditText edit = (EditText)myDialog.findViewById(R.id.input);
+                setLabelText(edit.getText());
                 myDialog.dismiss();
-
             }
         });
         myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         myDialog.show();
     }
 
-    private void cancelGoToMain() {
+    private void setLabelText(Editable text) {
+        TextView label = (TextView)findViewById(labelID);
+        label.setText(text);
+    }
+
+    private void goToMain() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+    }
+
+    private void saveGoToMain() {
+        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("numPictures", numPictures);
+        goToMain();
     }
 
     private void setNumberOfPictures(int numPics) {
@@ -327,12 +331,19 @@ public class ChangeDisplay extends AppCompatActivity {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putInt("imageViewID", imageViewID);
+        savedInstanceState.putInt("labelID", labelID);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             // permission was granted, yay!
         } else {
-            cancelGoToMain();
+            goToMain();
         }
     }
 
@@ -342,32 +353,27 @@ public class ChangeDisplay extends AppCompatActivity {
         switch (requestCode) {
             case TAKE_PICTURE:
                 if (resultCode == Activity.RESULT_OK) {
-                    Bundle extras = data.getExtras();
-                    Bitmap imageBitmap = (Bitmap) extras.get("data");
-                    ImageView imageView = (ImageView) findViewById(imageViewID);
-                    imageView.setImageBitmap(imageBitmap);
-                    pictureSettings.sendBroadcast();
-                    pictureSettings.doCrop();
+//                    Bundle extras = data.getExtras();
+//                    Bitmap imageBitmap = (Bitmap) extras.get("data");
+//                    ImageView imageView = (ImageView) findViewById(imageViewID);
+//                    imageView.setImageBitmap(imageBitmap);
+//                    pictureSettings.sendBroadcast();
+//                    pictureSettings.doCrop();
+                    Intent choosePictureIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    if (choosePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        startActivityForResult(choosePictureIntent, CHOOSE_PICTURE);
+                    }
                 }
                 break;
             case CHOOSE_PICTURE:
                 if (resultCode == Activity.RESULT_OK) {
-                    try {
-                        Uri imageUri = data.getData();
-                        pictureSettings.setImageURI(imageUri);
-                        InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                        Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
-                        ImageView imageView = (ImageView) findViewById(imageViewID);
-                        imageView.setImageBitmap(imageBitmap);
-                        pictureSettings.doCrop();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                    Uri imageUri = data.getData();
+                    pictureSettings.setImageURI(imageUri);
+                    pictureSettings.doCrop();
                 }
                 break;
             case CROP_FROM_CAMERA:
                 Bundle extras = data.getExtras();
-
                 if (extras != null) {
                     Bitmap photo = extras.getParcelable("data");
                     ImageView imageView = (ImageView) findViewById(imageViewID);

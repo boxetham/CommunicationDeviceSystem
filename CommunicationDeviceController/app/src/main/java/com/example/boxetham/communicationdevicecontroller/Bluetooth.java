@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class Bluetooth extends AppCompatActivity implements View.OnClickListener {
+    public final int REQUEST_ENABLE_BT = 1;
     public final String LOG_TAG = getClass().getName();
     public final String SERIAL_SERVICE = "00001101-0000-1000-8000-00805F9B34FB";
     public enum BT_STATE {UNKNOWN_STATE, CONNECTED_STATE, DISCOVERY_FINISH_STATE, DISCOVERY_START_STATE, FAILURE_STATE, NULL_ADAPTER};
@@ -89,6 +90,9 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
         _tvBtAddress = findViewById(R.id.tvBtAddress);
         _tvBtName = findViewById(R.id.tvBtName);
         _tvBtState = findViewById(R.id.tvBtState);
+
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(receiver, filter);
     }
 
     private void goToMain() {
@@ -130,6 +134,11 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
         if (_bluetoothAdapter == null) {
             updateState(BT_STATE.NULL_ADAPTER);
             return;
+        }
+
+        if (!_bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
 
         IntentFilter filter = new IntentFilter();
