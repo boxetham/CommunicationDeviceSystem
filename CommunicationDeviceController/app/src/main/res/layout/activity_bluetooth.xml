@@ -5,42 +5,35 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Bluetooth">
+    tools:context="net.braingang.communicationdevicecontroller.Bluetooth">
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:id="@+id/buttonLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/buttonDiscoveryStart"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="@string/discovery_start"/>
+    <Button
+        android:id="@+id/buttonDiscoveryStart"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/discovery_start"/>
 
-        <Button
-            android:id="@+id/buttonDiscoveryCancel"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="@string/discovery_cancel"
-            app:layout_constraintTop_toBottomOf="@id/buttonDiscoveryStart"/>
-    </LinearLayout>
+    <Button
+        android:id="@+id/buttonDiscoveryCancel"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/discovery_cancel"
+        app:layout_constraintTop_toBottomOf="@id/buttonDiscoveryStart"/>
+    
     <TextView
         android:id="@+id/tvBtName"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/label_bt_name"
-        android:padding="2dp"
-        app:layout_constraintTop_toBottomOf="@id/buttonLayout"/>
+        android:padding="3dp"
+        app:layout_constraintTop_toBottomOf="@id/buttonDiscoveryCancel"/>
 
     <TextView
         android:id="@+id/tvBtAddress"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/label_bt_address"
-        android:padding="2dp"
+        android:padding="3dp"
         app:layout_constraintTop_toBottomOf="@id/tvBtName"/>
 
     <TextView
@@ -48,48 +41,38 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/label_bt_state_unknown"
-        android:padding="2dp"
+        android:padding="3dp"
         app:layout_constraintTop_toBottomOf="@id/tvBtAddress"/>
-
-    <ListView
-        android:id="@+id/lvBtDevice"
-        android:background="#dddddd"
-        android:dividerHeight="5dp"
-        android:layout_height="150dp"
-        android:layout_width="match_parent"
-        android:layout_marginLeft="6dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="6dp"
-        app:layout_constraintTop_toBottomOf="@id/tvBtState"/>
 
     <Button
         android:id="@+id/buttonToggleRedLed"
         android:layout_width="fill_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:text="@string/led_red_toggle"
-        app:layout_constraintTop_toBottomOf="@id/lvBtDevice"/>
+        app:layout_constraintTop_toBottomOf="@id/tvBtState"/>
 
     <Button
         android:id="@+id/buttonToggleYellowLed"
         android:layout_width="fill_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:text="@string/led_yellow_toggle"
         app:layout_constraintTop_toBottomOf="@id/buttonToggleRedLed"/>
 
     <Button
         android:id="@+id/buttonToggleGreenLed"
         android:layout_width="fill_parent"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:text="@string/led_green_toggle"
         app:layout_constraintTop_toBottomOf="@id/buttonToggleYellowLed"/>
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="main"
-        app:layout_constraintTop_toBottomOf="@+id/buttonToggleGreenLed"
-        tools:layout_editor_absoluteX="147dp" />
-
+    <ListView
+        android:id="@+id/lvBtDevice"
+        android:background="#dddddd"
+        android:dividerHeight="5dp"
+        android:layout_height="300dp"
+        android:layout_width="match_parent"
+        android:layout_marginLeft="6dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="6dp"
+        app:layout_constraintTop_toBottomOf="@id/buttonToggleGreenLed"/>
 </android.support.constraint.ConstraintLayout>
