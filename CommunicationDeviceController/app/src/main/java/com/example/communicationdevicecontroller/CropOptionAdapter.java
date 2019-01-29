@@ -1,4 +1,4 @@
-package net.braingang.communicationdevicecontroller;
+package com.example.communicationdevicecontroller;
 
 import android.content.Context;
 import android.view.LayoutInflater;

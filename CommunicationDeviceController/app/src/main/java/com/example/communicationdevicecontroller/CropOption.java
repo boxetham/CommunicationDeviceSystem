@@ -1,4 +1,4 @@
-package net.braingang.communicationdevicecontroller;
+package com.example.communicationdevicecontroller;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;

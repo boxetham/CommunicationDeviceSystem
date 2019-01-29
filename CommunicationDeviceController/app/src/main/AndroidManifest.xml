@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="net.braingang.communicationdevicecontroller">
+    package="com.example.communicationdevicecontroller">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -20,25 +20,25 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="net.braingang.communicationdevicecontroller.Bluetooth" android:screenOrientation="portrait">
+        <activity android:name="com.example.communicationdevicecontroller.Bluetooth" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.media.action.IMAGE_CAPTURE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="net.braingang.communicationdevicecontroller.MainActivity">
+        <activity android:name="com.example.communicationdevicecontroller.MainActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="net.braingang.communicationdevicecontroller.ChangeDisplay" >
+        <activity android:name="com.example.communicationdevicecontroller.ChangeDisplay" >
             <intent-filter>
                 <action android:name="android.media.action.IMAGE_CAPTURE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name="net.braingang.communicationdevicecontroller.Settings" />
+        <activity android:name="com.example.communicationdevicecontroller.Settings" />
     </application>
 </manifest>

@@ -1,4 +1,4 @@
-package net.braingang.communicationdevicecontroller;
+package com.example.communicationdevicecontroller;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;

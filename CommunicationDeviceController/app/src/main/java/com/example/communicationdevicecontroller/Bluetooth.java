@@ -1,4 +1,4 @@
-package net.braingang.communicationdevicecontroller;
+package com.example.communicationdevicecontroller;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -12,10 +12,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,7 +27,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.UUID;

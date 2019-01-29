@@ -1,17 +1,15 @@
-package net.braingang.communicationdevicecontroller;
+package com.example.communicationdevicecontroller;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -33,20 +31,17 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.List;
 
 import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
 public class ChangeDisplay extends AppCompatActivity {
 
     Dialog myDialog;
-    private static final int REQUEST_BLU = 6;
     public static final int WRITE_EXTERNAL = 5;
     public static final int CROP_FROM_CAMERA = 4;
     private static final int RECORD_AUDIO = 3;
@@ -58,8 +53,6 @@ public class ChangeDisplay extends AppCompatActivity {
     private SoundRecording recorder = null;
     private Pictures pictureSettings = null;
     private Bitmap imageViewBitmap;
-    private Uri toSendUri;
-    private static final int DISCOVER_DURATION = 300;
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -71,7 +64,6 @@ public class ChangeDisplay extends AppCompatActivity {
         setValues(savedInstanceState);
         configureButtons();
         setupImageViews();
-        enableBlu();
     }
 
     private void setValues(Bundle savedInstanceState) {
@@ -224,33 +216,6 @@ public class ChangeDisplay extends AppCompatActivity {
         myDialog.show();
     }
 
-    private void configureSoundButtons() {
-        SoundRecording.RecordButton mRecordButton = recorder.getRecordButton(myDialog.getContext());
-        LinearLayout ll = myDialog.findViewById(R.id.layout);
-        ll.addView(mRecordButton, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                0));
-        SoundRecording.PlayButton mPlayButton = recorder.getPlayButton(myDialog.getContext());
-        ll.addView(mPlayButton, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                0));
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() { myDialog.findViewById(R.id.btNext).setVisibility(View.VISIBLE);}
-        });
-        myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                myDialog.dismiss();
-                ShowTextPopup();
-            }
-        });
-        myDialog.findViewById(R.id.btMicrophone).setVisibility(View.GONE);
-        myDialog.findViewById(R.id.btGallery).setVisibility(View.GONE);
-    }
-
     private void getFileName(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter name for sound file with no spaces");
@@ -286,6 +251,33 @@ public class ChangeDisplay extends AppCompatActivity {
         myDialog.show();
     }
 
+    private void configureSoundButtons() {
+        SoundRecording.RecordButton mRecordButton = recorder.getRecordButton(myDialog.getContext());
+        LinearLayout ll = myDialog.findViewById(R.id.layout);
+        ll.addView(mRecordButton, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                0));
+        SoundRecording.PlayButton mPlayButton = recorder.getPlayButton(myDialog.getContext());
+        ll.addView(mPlayButton, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                0));
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() { myDialog.findViewById(R.id.btNext).setVisibility(View.VISIBLE);}
+        });
+        myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myDialog.dismiss();
+                ShowTextPopup();
+            }
+        });
+        myDialog.findViewById(R.id.btMicrophone).setVisibility(View.GONE);
+        myDialog.findViewById(R.id.btGallery).setVisibility(View.GONE);
+    }
+
     private void setLabelText(Editable text) {
         TextView label = (TextView)findViewById(labelID);
         label.setText(text);
@@ -303,54 +295,8 @@ public class ChangeDisplay extends AppCompatActivity {
         editor.putInt("numPictures", numPictures);
         editor.commit();
         putImageData(numPictures);
-        sendData();
         goToMain();
     }
-
-    private void sendData() {
-        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (btAdapter == null) {
-            return;
-        }
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_SEND);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.setType("image/*");
-        intent.putExtra(Intent.EXTRA_STREAM, toSendUri);
-        PackageManager pm = getPackageManager();
-        List<ResolveInfo> appsList = pm.queryIntentActivities( intent, 1);
-        if(appsList.size() > 0) {
-            Intent intfas = new Intent(this, Settings.class);
-            startActivity(intfas);
-            return;
-        }
-        String packageName = null;
-        String className = null;
-        boolean found = false;
-        for(ResolveInfo info: appsList){
-
-            packageName = info.activityInfo.packageName;
-            if( packageName.equals("com.android.bluetooth")){
-                className = info.activityInfo.name;
-                found = true;
-                break;// found
-            }
-
-        }
-        if(! found){
-            Toast.makeText(this,"...", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        intent.setClassName(packageName, className);
-        startActivity(intent);
-    }
-
-    public void enableBlu(){
-        Intent discoveryIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        discoveryIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, DISCOVER_DURATION );
-        startActivityForResult(discoveryIntent, REQUEST_BLU);
-    }
-
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void putImageData(int numPictures) {
@@ -383,64 +329,38 @@ public class ChangeDisplay extends AppCompatActivity {
 
     private void setNumberOfPictures(int numPics) {
         numPictures = numPics;
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                findViewById(R.id.images4).setVisibility(View.INVISIBLE);
-            }
-        });
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                findViewById(R.id.images8).setVisibility(View.INVISIBLE);
-            }
-        });
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                findViewById(R.id.images15).setVisibility(View.INVISIBLE);
-            }
-        });
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                findViewById(R.id.images24).setVisibility(View.INVISIBLE);
-            }
-        });
+        changeVisibility(R.id.images4, View.INVISIBLE);
+        changeVisibility(R.id.images8, View.INVISIBLE);
+        changeVisibility(R.id.images15, View.INVISIBLE);
+        changeVisibility(R.id.images24, View.INVISIBLE);
         switch (numPics) {
             case 4:
-                this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        findViewById(R.id.images4).setVisibility(View.VISIBLE);
-                    }
-                });
+                changeVisibility(R.id.images4, View.VISIBLE);
                 break;
             case 8:
-                this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        findViewById(R.id.images8).setVisibility(View.VISIBLE);
-                    }
-                });
+                changeVisibility(R.id.images8, View.VISIBLE);
                 break;
             case 15:
-                this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        findViewById(R.id.images15).setVisibility(View.VISIBLE);
-                    }
-                });
+                changeVisibility(R.id.images15, View.VISIBLE);
                 break;
             case 24:
-                this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        findViewById(R.id.images24).setVisibility(View.VISIBLE);
-                    }
-                });
+                changeVisibility(R.id.images24, View.VISIBLE);
                 break;
         }
+    }
+
+    private void changeVisibility(final int id, final int visibilty){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                findViewById(id).setVisibility(visibilty);
+            }
+        });
+    }
+
+    private void updateImageView(){
+        ImageView imageView = (ImageView) findViewById(imageViewID);
+        imageView.setImageBitmap(imageViewBitmap);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -493,10 +413,6 @@ public class ChangeDisplay extends AppCompatActivity {
                 if (resultCode == Activity.RESULT_OK) {
 //                    Bundle extras = data.getExtras();
 //                    Bitmap imageBitmap = (Bitmap) extras.get("data");
-//                    ImageView imageView = (ImageView) findViewById(imageViewID);
-//                    imageView.setImageBitmap(imageBitmap);
-//                    pictureSettings.sendBroadcast();
-//                    pictureSettings.doCrop();
                     Intent choosePictureIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     if (choosePictureIntent.resolveActivity(getPackageManager()) != null) {
                         startActivityForResult(choosePictureIntent, CHOOSE_PICTURE);
@@ -506,7 +422,6 @@ public class ChangeDisplay extends AppCompatActivity {
             case CHOOSE_PICTURE:
                 if (resultCode == Activity.RESULT_OK) {
                     Uri imageUri = data.getData();
-                    toSendUri = imageUri;
                     pictureSettings.setImageURI(imageUri);
                     pictureSettings.doCrop();
                 }
@@ -519,10 +434,5 @@ public class ChangeDisplay extends AppCompatActivity {
                 }
                 break;
         }
-    }
-
-    private void updateImageView(){
-        ImageView imageView = (ImageView) findViewById(imageViewID);
-        imageView.setImageBitmap(imageViewBitmap);
     }
 }

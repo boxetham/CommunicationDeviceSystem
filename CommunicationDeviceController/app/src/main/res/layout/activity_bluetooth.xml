@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="net.braingang.communicationdevicecontroller.Bluetooth">
+    tools:context="com.example.communicationdevicecontroller.Bluetooth">
 
     <Button
         android:id="@+id/buttonDiscoveryStart"
