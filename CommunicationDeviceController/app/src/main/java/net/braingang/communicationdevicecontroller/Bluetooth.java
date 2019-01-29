@@ -108,6 +108,9 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
                 discoveryStop();
                 break;
             case R.id.buttonDiscoveryStart:
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+                }
                 discoveryStart();
                 break;
             case R.id.buttonToggleGreenLed:

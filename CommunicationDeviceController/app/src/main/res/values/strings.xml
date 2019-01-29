@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PerkyBlue</string>
+    <string name="app_name">CommunicationDeviceController</string>
 
     <string name="discovery_cancel">Cancel Discovery</string>
     <string name="discovery_start">Start Discovery</string>
