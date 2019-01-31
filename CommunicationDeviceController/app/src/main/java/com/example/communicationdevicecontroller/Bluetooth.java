@@ -33,14 +33,14 @@ import java.util.UUID;
 
 public class Bluetooth extends AppCompatActivity implements View.OnClickListener {
     public final int REQUEST_ENABLE_BT = 1;
-    public final String LOG_TAG = getClass().getName();
     public final String SERIAL_SERVICE = "00001101-0000-1000-8000-00805F9B34FB";
+
     public enum BT_STATE {UNKNOWN_STATE, CONNECTED_STATE, DISCOVERY_FINISH_STATE, DISCOVERY_START_STATE, FAILURE_STATE, NULL_ADAPTER};
 
     private ArrayList<BluetoothDevice> _deviceList = new ArrayList<BluetoothDevice>();
     private BluetoothDevice _selectedDevice = null;
 
-    private BluetoothSocket _socket = null;
+    private static BluetoothSocket _socket = null;
 
     private ListView _deviceListView;
     private BtArrayAdapter _btArrayAdapter;
@@ -62,7 +62,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice temp = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (_deviceList.contains(temp)) {
-                    Log.i(LOG_TAG, "skipping:" + temp.getName() + ":" + temp.getAddress());
+                    //skip
                 } else {
                     _deviceList.add(temp);
                 }
@@ -129,7 +129,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
                 new Thread(writeRead).start();
                 break;
             default:
-                Log.i(LOG_TAG, "unknown click event");
+                //do nothing
         }
     }
     @Override
@@ -160,8 +160,6 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
     }
 
     private void discoveryStart() {
-        Log.d(LOG_TAG, "discoveryStart");
-
         if (_bluetoothAdapter == null) {
             updateState(BT_STATE.NULL_ADAPTER);
             return;
@@ -182,10 +180,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
     }
 
     private void discoveryStop() {
-        Log.d(LOG_TAG, "discoveryStop");
-
         if (_bluetoothAdapter == null) {
-            Log.i(LOG_TAG, "unable to run w/null BT adapter");
             return;
         }
 
@@ -280,11 +275,14 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
             findViewById(R.id.buttonDiscoveryStart).setEnabled(false);
         }
     }
+
+    public static void sendDisplay(String[] labels, Bitmap[] imageBitMaps) {
+        final WriteRead writeRead = new WriteRead(_socket, labels[0]);
+        new Thread(writeRead).start();
+    }
 }
 
 class WriteRead implements Runnable {
-    public final String LOG_TAG = getClass().getName();
-
     private final BluetoothSocket _socket;
     String _message;
 
@@ -300,8 +298,6 @@ class WriteRead implements Runnable {
 
     WriteRead(BluetoothSocket socket, Bitmap msg) {
         _socket = socket;
-        int width = msg.getWidth();
-        int height = msg.getHeight();
 
         int size = msg.getRowBytes() * msg.getHeight();
         ByteBuffer byteBuffer = ByteBuffer.allocate(size);

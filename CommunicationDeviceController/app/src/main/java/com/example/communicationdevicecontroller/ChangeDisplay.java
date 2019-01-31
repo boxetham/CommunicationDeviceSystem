@@ -1,6 +1,7 @@
 package com.example.communicationdevicecontroller;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -126,7 +127,7 @@ public class ChangeDisplay extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View v) {
-                saveGoToMain();
+                areYouSure();
             }
         });
     }
@@ -263,10 +264,7 @@ public class ChangeDisplay extends AppCompatActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 0));
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() { myDialog.findViewById(R.id.btNext).setVisibility(View.VISIBLE);}
-        });
+        changeVisibility(myDialog.findViewById(R.id.btNext), View.VISIBLE);
         myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -299,15 +297,28 @@ public class ChangeDisplay extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void putImageData(int numPictures) {
+    private void areYouSure(){
         checkPermissions(WRITE_EXTERNAL);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Are you sure to upload?");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                saveGoToMain();
+            }
+        });
+        builder.show();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void putImageData(int numPictures) {
         SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         for (int i = 1; i <= numPictures; i++) {
             int imageId = getResources().getIdentifier("image" + numPictures + "View" + i, "id", getPackageName());
             int labelId = getResources().getIdentifier("lb" + numPictures + "Cpt" + i, "id", getPackageName());
             Bitmap imageBitMap = ((BitmapDrawable)((ImageView)findViewById(imageId)).getDrawable()).getBitmap();
-            String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+            String path = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
             OutputStream fOut = null;
             File file = new File(path, "Image" + numPictures + "View"+i+".jpg");
             try {
@@ -325,35 +336,49 @@ public class ChangeDisplay extends AppCompatActivity {
             editor.putString("Label" + i, String.valueOf(((TextView)findViewById(labelId)).getText()));
         }
         editor.commit();
+        sendImages(numPictures);
+    }
+
+    private void sendImages(int numPictures){
+        String[] labels = new String[numPictures];
+        Bitmap[] imageBitMaps = new Bitmap[numPictures];
+        for (int i = 1; i <= numPictures; i++) {
+            int imageId = getResources().getIdentifier("image" + numPictures + "View" + i, "id", getPackageName());
+            int labelId = getResources().getIdentifier("lb" + numPictures + "Cpt" + i, "id", getPackageName());
+            Bitmap imageBitMap = ((BitmapDrawable) ((ImageView) findViewById(imageId)).getDrawable()).getBitmap();
+            labels[i-1] = String.valueOf(((TextView)findViewById(labelId)).getText());
+            imageBitMaps[i-1] = imageBitMap;
+        }
+        Bluetooth.sendDisplay(labels, imageBitMaps);
     }
 
     private void setNumberOfPictures(int numPics) {
         numPictures = numPics;
-        changeVisibility(R.id.images4, View.INVISIBLE);
-        changeVisibility(R.id.images8, View.INVISIBLE);
-        changeVisibility(R.id.images15, View.INVISIBLE);
-        changeVisibility(R.id.images24, View.INVISIBLE);
+        changeVisibility(findViewById(R.id.images4), View.INVISIBLE);
+        changeVisibility(findViewById(R.id.images8), View.INVISIBLE);
+        changeVisibility(findViewById(R.id.images15), View.INVISIBLE);
+        changeVisibility(findViewById(R.id.images24), View.INVISIBLE);
         switch (numPics) {
             case 4:
-                changeVisibility(R.id.images4, View.VISIBLE);
+                changeVisibility(findViewById(R.id.images4), View.VISIBLE);
                 break;
             case 8:
-                changeVisibility(R.id.images8, View.VISIBLE);
+                changeVisibility(findViewById(R.id.images8), View.VISIBLE);
                 break;
             case 15:
-                changeVisibility(R.id.images15, View.VISIBLE);
+                changeVisibility(findViewById(R.id.images15), View.VISIBLE);
                 break;
             case 24:
-                changeVisibility(R.id.images24, View.VISIBLE);
+                changeVisibility(findViewById(R.id.images24), View.VISIBLE);
                 break;
         }
     }
 
-    private void changeVisibility(final int id, final int visibilty){
+    private void changeVisibility(final View view, final int visibilty){
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                findViewById(id).setVisibility(visibilty);
+                view.setVisibility(visibilty);
             }
         });
     }

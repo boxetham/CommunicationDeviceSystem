@@ -8,7 +8,10 @@ import android.media.MediaRecorder;
 import android.util.Log;
 import android.view.View;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class SoundRecording {
 
@@ -47,6 +50,22 @@ public class SoundRecording {
         if(!isRecording) {
             mPlayer = new MediaPlayer();
             String file = mFileName + "/" + filename + ".3gp";
+            InputStream istream = null;
+            try {
+                int c;
+                istream = new FileInputStream(file);
+                while ((c = istream.read()) != -1){
+
+                }
+            } catch (IOException e) {
+                System.out.println("Error: " + e.getMessage());
+            } finally {
+                try {
+                    istream.close();
+                } catch (IOException e) {
+                    System.out.println("File did not close");
+                }
+            }
             try {
                 mPlayer.setDataSource(file);
                 mPlayer.prepare();

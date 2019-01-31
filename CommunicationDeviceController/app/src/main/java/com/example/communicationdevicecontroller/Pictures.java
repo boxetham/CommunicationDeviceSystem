@@ -118,13 +118,4 @@ public class Pictures {
     public void setImageURI(Uri uri) {
         mImageCaptureUri = uri;
     }
-
-    public void sendBroadcast() {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = createImageFile();
-        Uri contentUri = Uri.fromFile(f);
-        setImageURI(contentUri);
-        mediaScanIntent.setData(contentUri);
-        context.sendBroadcast(mediaScanIntent);
-    }
 }
