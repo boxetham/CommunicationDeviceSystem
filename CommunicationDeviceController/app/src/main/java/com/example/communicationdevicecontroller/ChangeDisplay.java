@@ -1,7 +1,6 @@
 package com.example.communicationdevicecontroller;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -19,7 +18,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -28,19 +26,30 @@ import android.text.Editable;
 import android.text.InputType;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
 public class ChangeDisplay extends AppCompatActivity {
+
+    private static Map<Integer, String[]> permissionMap = new HashMap<Integer, String[]>(){{
+        put(TAKE_PICTURE, new String[]{Manifest.permission.CAMERA});
+        put(RECORD_AUDIO, new String[]{Manifest.permission.RECORD_AUDIO});
+        put(WRITE_EXTERNAL, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE});
+    }};
+    private static Map<Integer, Integer> numPicturesEncoding = new HashMap<Integer, Integer>(){{
+        put(4,0);put(8,1);put(15,2);put(24,3);
+    }};
 
     Dialog myDialog;
     public static final int WRITE_EXTERNAL = 5;
@@ -49,12 +58,13 @@ public class ChangeDisplay extends AppCompatActivity {
     private static final int CHOOSE_PICTURE = 2;
     private static final int TAKE_PICTURE = 1;
     private static int numPictures;
-    private int imageViewID = 0;
-    private int labelID = 0;
-    private SoundRecording recorder = null;
-    private Pictures pictureSettings = null;
     private Bitmap imageViewBitmap;
-
+    private SoundRecording recorder;
+    private Pictures pictureSettings;
+    private String[] soundBites;
+    private int currentTile = 1;
+    private int[][] imageIds;
+    private int[][] labelIds;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -67,20 +77,41 @@ public class ChangeDisplay extends AppCompatActivity {
         setupImageViews();
     }
 
+    private void getIds(){
+        getIds(4);
+        getIds(8);
+        getIds(15);
+        getIds(24);
+    }
+
+    private void getIds(int size) {
+        for(int i = 1; i <= size; i++){
+            imageIds[numPicturesEncoding.get(size)][i-1] = getResources().getIdentifier("image" + size + "View" + i, "id", getPackageName());
+            labelIds[numPicturesEncoding.get(size)][i-1] = getResources().getIdentifier("lb" + numPictures + "Cpt" + i, "id", getPackageName());
+        }
+    }
+
     private void setValues(Bundle savedInstanceState) {
+        imageIds = new int[4][24];
+        labelIds = new int[4][24];
+        myDialog = new Dialog(this);
+        recorder = new SoundRecording(this);
+        pictureSettings = new Pictures(this, this);
         SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
         numPictures = prefs.getInt("numPictures", 4);
         getImageViews(prefs);
         if (savedInstanceState != null) {
-            imageViewID = savedInstanceState.getInt("imageViewID");
-            labelID = savedInstanceState.getInt("labelID");
+            currentTile = savedInstanceState.getInt("currentTile");
+            for(Integer numPics : numPicturesEncoding.keySet()){
+                for(int i = 0; i < numPics; i++){
+                    imageIds[numPicturesEncoding.get(numPics)][i] = savedInstanceState.getInt("image" + numPics + "Id" + i);
+                    labelIds[numPicturesEncoding.get(numPics)][i] = savedInstanceState.getInt("label" + numPics + "id" + i);
+                }
+            }
         } else {
-            imageViewID = getResources().getIdentifier("image" + numPictures + "View" + 1, "id", getPackageName());
-            labelID = getResources().getIdentifier("lb" + numPictures + "Cpt" + 1, "id", getPackageName());
+            currentTile = 1;
+            getIds();
         }
-        myDialog = new Dialog(this);
-        recorder = new SoundRecording(this);
-        pictureSettings = new Pictures(this, this);
     }
 
     private void getImageViews(SharedPreferences prefs) {
@@ -89,16 +120,11 @@ public class ChangeDisplay extends AppCompatActivity {
             String label = prefs.getString("Label" + i, "label");
             int imageId = getResources().getIdentifier("image" + numPictures + "View" + i, "id", getPackageName());
             int labelId = getResources().getIdentifier("lb" + numPictures + "Cpt" + i, "id", getPackageName());
-
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             Bitmap bitmap = BitmapFactory.decodeFile(imageFile, options);
             ((ImageView)findViewById(imageId)).setImageBitmap(bitmap);
-            if(label.equals("")){
-                ((TextView)findViewById(labelId)).setText("label");
-            }else{
-                ((TextView)findViewById(labelId)).setText(label);
-            }
+            ((TextView)findViewById(labelId)).setText(label);
         }
     }
 
@@ -127,7 +153,7 @@ public class ChangeDisplay extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View v) {
-                areYouSure();
+                saveGoToMain();
             }
         });
     }
@@ -154,8 +180,7 @@ public class ChangeDisplay extends AppCompatActivity {
 
     private void ShowCameraPopup(int id) {
         myDialog.setContentView(R.layout.popup_choose_picture);
-        imageViewID = getResources().getIdentifier("image" + numPictures + "View" + id, "id", getPackageName());
-        labelID = getResources().getIdentifier("lb" + numPictures + "Cpt" + id, "id", getPackageName());
+        currentTile = id;
         myDialog.findViewById(R.id.btCamera).setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             public void onClick(View v) {
@@ -205,7 +230,7 @@ public class ChangeDisplay extends AppCompatActivity {
         myDialog.findViewById(R.id.btGallery).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myDialog.dismiss();
+                listSoundFiles();
             }
         });
         myDialog.findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
@@ -215,6 +240,69 @@ public class ChangeDisplay extends AppCompatActivity {
         });
         myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         myDialog.show();
+    }
+
+    private void listSoundFiles() {
+        ViewGroup.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0);
+        final Button selectButton = myDialog.findViewById(R.id.btSelect);
+        myDialog.findViewById(R.id.btBack).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myDialog.dismiss();
+                ShowSoundPopup();
+            }
+        });
+        List<String> files = recorder.getSoundRecordings();
+        ScrollView scroll = myDialog.findViewById(R.id.scrollButtons);
+        selectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectFileFirst();
+            }
+        });
+        scroll.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 370));
+        LinearLayout ll = myDialog.findViewById(R.id.recordingsLayout);
+        for(String file : files){
+            final String filename = file.substring(0, file.lastIndexOf('.'));
+            Button fileButton = new Button(myDialog.getContext());
+            fileButton.setText(filename);
+            fileButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    recorder.startPlaying(filename);
+                    setSelectedSound(filename);
+                    selectButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            myDialog.dismiss();
+                            ShowTextPopup();
+                        }
+                    });
+                }
+            });
+            ll.addView(fileButton, params);
+        }
+        changeVisibility(selectButton, View.VISIBLE);
+        changeVisibility(myDialog.findViewById(R.id.btBack), View.VISIBLE);
+        changeVisibility(myDialog.findViewById(R.id.lbSelectedSound), View.VISIBLE);
+        myDialog.findViewById(R.id.btMicrophone).setVisibility(View.GONE);
+        myDialog.findViewById(R.id.btGallery).setVisibility(View.GONE);
+    }
+
+    private void setSelectedSound(String filename) {
+        TextView view = myDialog.findViewById(R.id.lbSelectedSound);
+        view.setText("Selected file: " + filename);
+    }
+
+    private void selectFileFirst() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select a sound file first");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {                    }
+        });
+        builder.show();
     }
 
     private void getFileName(){
@@ -227,7 +315,7 @@ public class ChangeDisplay extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 recorder.setName(input.getText().toString());
-                configureSoundButtons();
+                showRecordingOptions();
             }
         });
         builder.show();
@@ -243,8 +331,7 @@ public class ChangeDisplay extends AppCompatActivity {
         myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 EditText edit = (EditText)myDialog.findViewById(R.id.input);
-                setLabelText(edit.getText());
-                updateImageView();
+                updateDisplay(edit.getText());
                 myDialog.dismiss();
             }
         });
@@ -252,18 +339,23 @@ public class ChangeDisplay extends AppCompatActivity {
         myDialog.show();
     }
 
-    private void configureSoundButtons() {
+    private void updateDisplay(Editable text) {
+        TextView label = (TextView)findViewById(labelIds[numPicturesEncoding.get(numPictures)][currentTile-1]);
+        label.setText(text);
+        ImageView imageView = (ImageView) findViewById(imageIds[numPicturesEncoding.get(numPictures)][currentTile-1]);
+        imageView.setImageBitmap(imageViewBitmap);
+    }
+
+    private void showRecordingOptions() {
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                0);
         SoundRecording.RecordButton mRecordButton = recorder.getRecordButton(myDialog.getContext());
-        LinearLayout ll = myDialog.findViewById(R.id.layout);
-        ll.addView(mRecordButton, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                0));
+        LinearLayout ll = myDialog.findViewById(R.id.buttonLayout);
+        ll.addView(mRecordButton, params);
         SoundRecording.PlayButton mPlayButton = recorder.getPlayButton(myDialog.getContext());
-        ll.addView(mPlayButton, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                0));
+        ll.addView(mPlayButton, params);
         changeVisibility(myDialog.findViewById(R.id.btNext), View.VISIBLE);
         myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -276,83 +368,8 @@ public class ChangeDisplay extends AppCompatActivity {
         myDialog.findViewById(R.id.btGallery).setVisibility(View.GONE);
     }
 
-    private void setLabelText(Editable text) {
-        TextView label = (TextView)findViewById(labelID);
-        label.setText(text);
-    }
-
-    private void goToMain() {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void saveGoToMain() {
-        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("numPictures", numPictures);
-        editor.commit();
-        putImageData(numPictures);
-        goToMain();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void areYouSure(){
-        checkPermissions(WRITE_EXTERNAL);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Are you sure to upload?");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                saveGoToMain();
-            }
-        });
-        builder.show();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void putImageData(int numPictures) {
-        SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        for (int i = 1; i <= numPictures; i++) {
-            int imageId = getResources().getIdentifier("image" + numPictures + "View" + i, "id", getPackageName());
-            int labelId = getResources().getIdentifier("lb" + numPictures + "Cpt" + i, "id", getPackageName());
-            Bitmap imageBitMap = ((BitmapDrawable)((ImageView)findViewById(imageId)).getDrawable()).getBitmap();
-            String path = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
-            OutputStream fOut = null;
-            File file = new File(path, "Image" + numPictures + "View"+i+".jpg");
-            try {
-                if(!file.exists()){
-                    file.createNewFile();
-                }
-                fOut = new FileOutputStream(file);
-                imageBitMap.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
-                fOut.flush(); // Not really required
-                fOut.close(); // do not forget to close the stream
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            editor.putString("ImageView" + i, file.getAbsolutePath());
-            editor.putString("Label" + i, String.valueOf(((TextView)findViewById(labelId)).getText()));
-        }
-        editor.commit();
-        sendImages(numPictures);
-    }
-
-    private void sendImages(int numPictures){
-        String[] labels = new String[numPictures];
-        Bitmap[] imageBitMaps = new Bitmap[numPictures];
-        for (int i = 1; i <= numPictures; i++) {
-            int imageId = getResources().getIdentifier("image" + numPictures + "View" + i, "id", getPackageName());
-            int labelId = getResources().getIdentifier("lb" + numPictures + "Cpt" + i, "id", getPackageName());
-            Bitmap imageBitMap = ((BitmapDrawable) ((ImageView) findViewById(imageId)).getDrawable()).getBitmap();
-            labels[i-1] = String.valueOf(((TextView)findViewById(labelId)).getText());
-            imageBitMaps[i-1] = imageBitMap;
-        }
-        Bluetooth.sendDisplay(labels, imageBitMaps);
-    }
-
     private void setNumberOfPictures(int numPics) {
+        soundBites = new String[numPics];
         numPictures = numPics;
         changeVisibility(findViewById(R.id.images4), View.INVISIBLE);
         changeVisibility(findViewById(R.id.images8), View.INVISIBLE);
@@ -383,41 +400,12 @@ public class ChangeDisplay extends AppCompatActivity {
         });
     }
 
-    private void updateImageView(){
-        ImageView imageView = (ImageView) findViewById(imageViewID);
-        imageView.setImageBitmap(imageViewBitmap);
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private int checkPermissions(int permission) {
-        switch (permission) {
-            case TAKE_PICTURE:
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, TAKE_PICTURE);
-                    return 1;
-                }
-                break;
-            case RECORD_AUDIO:
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO);
-                    return 1;
-                }
-                break;
-            case WRITE_EXTERNAL:
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL);
-                    return 1;
-                }
-                break;
+        if(ActivityCompat.checkSelfPermission(this, permissionMap.get(permission)[0]) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this, permissionMap.get(permission), permission);
         }
         return 0;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putInt("imageViewID", imageViewID);
-        savedInstanceState.putInt("labelID", labelID);
-        super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
@@ -428,6 +416,18 @@ public class ChangeDisplay extends AppCompatActivity {
         } else {
             goToMain();
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putInt("currentTile", currentTile);
+        for(int x : numPicturesEncoding.keySet()){
+            for(int i = 0; i < x; i++){
+                savedInstanceState.putInt("image" + x + "Id" + i, imageIds[numPicturesEncoding.get(x)][i]);
+                savedInstanceState.putInt("label" + x + "id" + i, labelIds[numPicturesEncoding.get(x)][i]);
+            }
+        }
+        super.onSaveInstanceState(savedInstanceState);
     }
 
     @Override
@@ -459,5 +459,38 @@ public class ChangeDisplay extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    private void goToMain() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void saveGoToMain() {
+        saveDisplayInfo();
+        goToMain();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void saveDisplayInfo() {
+        String[] labels = new String[numPictures];
+        Bitmap[] imageBitMaps = new Bitmap[numPictures];
+        checkPermissions(WRITE_EXTERNAL);
+        SharedPreferences.Editor editor = this.getPreferences(Context.MODE_PRIVATE).edit();
+        editor.putInt("numPictures", numPictures);
+        for (int i = 1; i <= numPictures; i++) {
+            int imageId = imageIds[numPicturesEncoding.get(numPictures)][i-1];
+            Bitmap imageBitMap = ((BitmapDrawable) ((ImageView) findViewById(imageId)).getDrawable()).getBitmap();
+            int labelId = labelIds[numPicturesEncoding.get(numPictures)][i-1];
+            String labelText =  String.valueOf(((TextView)findViewById(labelId)).getText());
+            String picturefile = pictureSettings.writeImage(imageBitMap, numPictures, i);
+            editor.putString("ImageView" + i, picturefile);
+            editor.putString("Label" + i, labelText);
+            labels[i-1] = labelText;
+            imageBitMaps[i-1] = imageBitMap;
+        }
+        editor.commit();
+        Bluetooth.sendDisplay(labels, imageBitMaps);
     }
 }

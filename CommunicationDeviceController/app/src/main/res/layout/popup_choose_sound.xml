@@ -13,20 +13,47 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Select Sound Bite"
-        android:textSize="30sp"
-        android:textColor="#FFFFFF"/>
+        android:textColor="#FFFFFF"
+        android:textSize="30sp" />
+
+    <Button
+        android:id="@+id/btSelect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select"
+        android:visibility="gone" />
 
     <LinearLayout
-        android:id="@+id/layout"
+        android:id="@+id/buttonLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"></LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scrollButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/recordingsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"></LinearLayout>
+    </ScrollView>
 
     <Button
         android:id="@+id/btMicrophone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Record new sound" />
+
+    <TextView
+        android:id="@+id/lbSelectedSound"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/btGallery"
@@ -39,6 +66,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text=" Next"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btBack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Back"
         android:visibility="gone" />
 
     <Button

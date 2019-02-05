@@ -7,11 +7,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -117,5 +120,26 @@ public class Pictures {
 
     public void setImageURI(Uri uri) {
         mImageCaptureUri = uri;
+    }
+
+    private String getPicturesDir() {
+        return context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+    }
+
+    public String writeImage(Bitmap imageBitMap, int numPictures, int i) {
+        OutputStream fOut = null;
+        File file = new File(getPicturesDir(), "Image" + numPictures + "View"+i+".jpg");
+        try {
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            fOut = new FileOutputStream(file);
+            imageBitMap.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
+            fOut.flush(); // Not really required
+            fOut.close(); // do not forget to close the stream
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file.getAbsolutePath();
     }
 }

@@ -23,6 +23,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
@@ -284,16 +286,17 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
 
 class WriteRead implements Runnable {
     private final BluetoothSocket _socket;
-    String _message;
+    byte[] _message;
 
     private Reader _reader;
     private Writer _writer;
+    private OutputStream output;
 
     private final StringBuilder _stringBuilder = new StringBuilder();
 
     WriteRead(BluetoothSocket socket, String msg) {
         _socket = socket;
-        _message = msg;
+        //_message = msg.toCharArray();
     }
 
     WriteRead(BluetoothSocket socket, Bitmap msg) {
@@ -303,11 +306,7 @@ class WriteRead implements Runnable {
         ByteBuffer byteBuffer = ByteBuffer.allocate(size);
         msg.copyPixelsToBuffer(byteBuffer);
         byte[] byteArray = byteBuffer.array();
-        try {
-            _message = new String(byteArray, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            _message = new String(byteArray);
-        }
+        _message = byteArray;
     }
 
     public String getResponse() {
@@ -318,26 +317,35 @@ class WriteRead implements Runnable {
         try {
             _reader = new InputStreamReader(_socket.getInputStream(), "UTF-8");
             _writer = new OutputStreamWriter(_socket.getOutputStream(), "UTF-8");
+            output = _socket.getOutputStream();
+            output.write(_message);
+            output.write('\u0000');
+            output.flush();
 
-            switch(_message) {
-                case "yellow":
-                    _writer.write(_message);           // write the message
-//                    _writer.write(_message + "\n");
-                    _writer.flush();
-                    break;
-                case "green":
-                    _writer.write(_message);           // write the message
-                    _writer.flush();
-                    break;
-                case "red":
-                    _writer.write(_message);           // write the message
-                    _writer.flush();
-                    break;
-                default:
-                    _writer.write(_message);           // write the message
-                    _writer.flush();
-                    break;
-            }
+//            switch(_message) {
+//
+//                case "yellow":
+//                    _writer.write(_message); // write the message
+//                    _writer.write('\u0000');
+////                    _writer.write(_message + "\n");
+//                    _writer.flush();
+//                    break;
+//                case "green":
+//                    _writer.write(_message);           // write the message
+//                    _writer.write('\u0000');
+//                    _writer.flush();
+//                    break;
+//                case "red":
+//                    _writer.write(_message);           // write the message
+//                    _writer.write('\u0000');
+//                    _writer.flush();
+//                    break;
+//                default:
+//                    _writer.write(_message);           // write the message
+//                    _writer.write('\u0000');
+//                    _writer.flush();
+//                    break;
+//            }
 
             final char[] buffer = new char[8];
             while (true) {

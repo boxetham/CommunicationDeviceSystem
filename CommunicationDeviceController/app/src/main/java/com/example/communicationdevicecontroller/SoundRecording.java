@@ -9,14 +9,19 @@ import android.util.Log;
 import android.view.View;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SoundRecording {
 
     private static Context context;
-    private static String mFileName = null;
+    private static String pathToFolder = null;
     private static String testName = null;
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
@@ -24,7 +29,7 @@ public class SoundRecording {
 
     public SoundRecording(Context context){
         this.context = context;
-        mFileName = context.getExternalCacheDir().getAbsolutePath();
+        pathToFolder = context.getExternalCacheDir().getAbsolutePath();
         testName = "audiorecordtest";
     }
 
@@ -46,26 +51,21 @@ public class SoundRecording {
         }
     }
 
+    public List<String> getSoundRecordings(){
+        ArrayList<String> filenames = new ArrayList<>();
+        File folder = new File(pathToFolder);
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isFile()) {
+                filenames.add(fileEntry.getName());
+            }
+        }
+        return filenames;
+    }
+
     public void startPlaying(String filename) {
         if(!isRecording) {
             mPlayer = new MediaPlayer();
-            String file = mFileName + "/" + filename + ".3gp";
-            InputStream istream = null;
-            try {
-                int c;
-                istream = new FileInputStream(file);
-                while ((c = istream.read()) != -1){
-
-                }
-            } catch (IOException e) {
-                System.out.println("Error: " + e.getMessage());
-            } finally {
-                try {
-                    istream.close();
-                } catch (IOException e) {
-                    System.out.println("File did not close");
-                }
-            }
+            String file = pathToFolder + "/" + filename + ".3gp";
             try {
                 mPlayer.setDataSource(file);
                 mPlayer.prepare();
@@ -93,7 +93,7 @@ public class SoundRecording {
     }
 
     private void startRecording() {
-        String file = mFileName + "/" + testName + ".3gp";
+        String file = pathToFolder + "/" + testName + ".3gp";
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
