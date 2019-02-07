@@ -65,7 +65,7 @@ public class SoundRecording {
     public void startPlaying(String filename) {
         if(!isRecording) {
             mPlayer = new MediaPlayer();
-            String file = pathToFolder + "/" + filename + ".3gp";
+            String file = pathToFolder + "/" + filename + ".wav";
             try {
                 mPlayer.setDataSource(file);
                 mPlayer.prepare();
@@ -93,7 +93,7 @@ public class SoundRecording {
     }
 
     private void startRecording() {
-        String file = pathToFolder + "/" + testName + ".3gp";
+        String file = pathToFolder + "/" + testName + ".wav";
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -125,6 +125,14 @@ public class SoundRecording {
 
     public void setName(String filename) {
         testName = filename;
+    }
+
+    public String getName() {
+        return testName;
+    }
+
+    public String getFile(String filename) {
+        return pathToFolder + "/" + filename + ".wav";
     }
 
     class RecordButton extends android.support.v7.widget.AppCompatButton {

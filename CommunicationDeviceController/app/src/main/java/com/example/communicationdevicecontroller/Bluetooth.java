@@ -3,37 +3,44 @@ package com.example.communicationdevicecontroller;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.CookieHandler;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class Bluetooth extends AppCompatActivity implements View.OnClickListener {
+    private static Map<Boolean, Byte> booleanEncoding = new HashMap<Boolean, Byte>(){{
+        put(false, new Byte((byte)0)); put(true, new Byte((byte)1));
+    }};
     public final int REQUEST_ENABLE_BT = 1;
     public final String SERIAL_SERVICE = "00001101-0000-1000-8000-00805F9B34FB";
 
@@ -52,7 +59,12 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
     private TextView _tvBtAddress;
     private TextView _tvBtName;
     private TextView _tvBtState;
-    private Bitmap imageBitmap;
+
+    private SoundRecording recording;
+
+    public Bluetooth(){
+
+    }
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
 
@@ -115,19 +127,39 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
                 discoveryStart();
                 break;
             case R.id.buttonToggleGreenLed:
-                writeRead = new WriteRead(_socket, "green");//GREEN_LED);
+                recording = new SoundRecording(this);
+                String soundFile = recording.getFile("wavtest");
+                ArrayList<Byte> sound = new ArrayList<>();
+                try {
+                    InputStream inputStream = new FileInputStream(soundFile);
+                    byte[] bytedata = new byte[1024];
+                    int    bytesRead = inputStream.read(bytedata);
+                    while(bytesRead != -1) {
+                        for(int i = 0; i < bytesRead; i++){
+                            sound.add(bytedata[i]);
+                        }
+                        bytesRead = inputStream.read(bytedata);
+                    }
+                }catch(Exception e){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Please try again");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {                    }
+                    });
+                    builder.show();
+                }
+                writeRead = new WriteRead(_socket, getbyteArray(sound), "sound");//RED_LED);
                 new Thread(writeRead).start();
                 break;
             case R.id.buttonToggleRedLed:
-                if (checkPermissions(1) != 1) {
-                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    if (intent.resolveActivity(getPackageManager()) != null) {
-                        startActivityForResult(intent, 1);
-                    }
+                Intent choosePictureIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                if (choosePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivityForResult(choosePictureIntent, 1);
                 }
                 break;
             case R.id.buttonToggleYellowLed:
-                writeRead = new WriteRead(_socket, "red");//YELLOW_LED);
+                writeRead = new WriteRead(_socket, "yellow", "label");//YELLOW_LED);
                 new Thread(writeRead).start();
                 break;
             default:
@@ -140,25 +172,32 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
         switch (requestCode) {
             case 1:
                 if (resultCode == Activity.RESULT_OK) {
-                    Bundle extras = data.getExtras();
-                    imageBitmap = (Bitmap) extras.get("data");
-                    WriteRead writeRead = new WriteRead(_socket, imageBitmap);//RED_LED);
+                    Uri imageUri = data.getData();
+                    ArrayList<Byte> picture = new ArrayList<Byte>();
+                    try {
+                        InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                        byte[] bytedata = new byte[1024];
+                        int    bytesRead = inputStream.read(bytedata);
+                        while(bytesRead != -1) {
+                            for(int i = 0; i < bytesRead; i++){
+                                picture.add(bytedata[i]);
+                            }
+                            bytesRead = inputStream.read(bytedata);
+                        }
+                    }catch(Exception e){
+                        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        builder.setTitle("Please try again");
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {                    }
+                        });
+                        builder.show();
+                    }
+                    WriteRead writeRead = new WriteRead(_socket, getbyteArray(picture), "picture");//RED_LED);
                     new Thread(writeRead).start();
                 }
                 break;
         }
-    }
-
-    private int checkPermissions(int permission) {
-        switch (permission) {
-            case 1:
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
-                    return 1;
-                }
-                break;
-        }
-        return 0;
     }
 
     private void discoveryStart() {
@@ -278,9 +317,75 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
         }
     }
 
-    public static void sendDisplay(String[] labels, Bitmap[] imageBitMaps) {
-        final WriteRead writeRead = new WriteRead(_socket, labels[0]);
+    // 0 - volume
+    // 1 - vibration
+    // 2 - music
+    public static void sendSettings(boolean vibration, boolean music, int volume) {
+        ArrayList<Byte> settings = new ArrayList<>();
+        settings.add((byte)0);
+        settings.add((byte)volume);
+        settings.add((byte)1);
+        settings.add(booleanEncoding.get(vibration));
+        settings.add((byte)2);
+        settings.add(booleanEncoding.get(music));
+        settings.add((byte)127);
+        WriteRead writeRead = new WriteRead(_socket, getbyteArray(settings), "settings");
         new Thread(writeRead).start();
+    }
+
+    private static byte[] getbyteArray(ArrayList<Byte> settings) {
+        byte[] arr = new byte[settings.size()];
+        for(int i = 0; i < arr.length; i++){
+            arr[i] = settings.get(i);
+        }
+        return arr;
+    }
+
+    private static ArrayList<Byte> getVolume(int volume) {
+        ByteBuffer b = ByteBuffer.allocate(4);
+        b.putInt(volume);
+        byte[] arr = new byte[4];
+        ArrayList<Byte> vol = new ArrayList<>();
+        for(int i = 0; i < arr.length; i++){
+            vol.add(arr[i]);
+        }
+        return vol;
+    }
+
+    public static void sendDisplay(String[] labels, String[] pictureFiles, String[] soundFiles) {
+        for(int i = 0; i < labels.length; i++){
+            sendFile(pictureFiles[i], "picture");
+            sendFile(soundFiles[i], "sound");
+            sendLabel(labels[i]);
+        }
+    }
+
+    private static void sendLabel(String label) {
+        WriteRead writeRead = new WriteRead(_socket, label, "label");
+        new Thread(writeRead).start();
+    }
+
+    private static void sendFile(String file, String type) {
+        byte[] arr = readFile(file);
+        WriteRead writeRead = new WriteRead(_socket, arr, type);
+        new Thread(writeRead).start();
+    }
+
+    private static byte[] readFile(String pictureFile) {
+        ArrayList<Byte> sound = new ArrayList<>();
+        try {
+            InputStream inputStream = new FileInputStream(pictureFile);
+            byte[] bytedata = new byte[1024];
+            int    bytesRead = inputStream.read(bytedata);
+            while(bytesRead != -1) {
+                for(int i = 0; i < bytesRead; i++){
+                    sound.add(bytedata[i]);
+                }
+                bytesRead = inputStream.read(bytedata);
+            }
+        }catch(Exception e){
+        }
+        return getbyteArray(sound);
     }
 }
 
@@ -291,22 +396,21 @@ class WriteRead implements Runnable {
     private Reader _reader;
     private Writer _writer;
     private OutputStream output;
+    private String type;
+    private String _label;
 
     private final StringBuilder _stringBuilder = new StringBuilder();
 
-    WriteRead(BluetoothSocket socket, String msg) {
+    WriteRead(BluetoothSocket socket, String msg, String type) {
+        this.type = type;
         _socket = socket;
-        //_message = msg.toCharArray();
+        _label = msg;
     }
 
-    WriteRead(BluetoothSocket socket, Bitmap msg) {
+    WriteRead(BluetoothSocket socket, byte[] msg, String type) {
+        this.type = type;
         _socket = socket;
-
-        int size = msg.getRowBytes() * msg.getHeight();
-        ByteBuffer byteBuffer = ByteBuffer.allocate(size);
-        msg.copyPixelsToBuffer(byteBuffer);
-        byte[] byteArray = byteBuffer.array();
-        _message = byteArray;
+        _message = msg;
     }
 
     public String getResponse() {
@@ -318,34 +422,33 @@ class WriteRead implements Runnable {
             _reader = new InputStreamReader(_socket.getInputStream(), "UTF-8");
             _writer = new OutputStreamWriter(_socket.getOutputStream(), "UTF-8");
             output = _socket.getOutputStream();
-            output.write(_message);
-            output.write('\u0000');
-            output.flush();
 
-//            switch(_message) {
-//
-//                case "yellow":
-//                    _writer.write(_message); // write the message
-//                    _writer.write('\u0000');
-////                    _writer.write(_message + "\n");
-//                    _writer.flush();
-//                    break;
-//                case "green":
-//                    _writer.write(_message);           // write the message
-//                    _writer.write('\u0000');
-//                    _writer.flush();
-//                    break;
-//                case "red":
-//                    _writer.write(_message);           // write the message
-//                    _writer.write('\u0000');
-//                    _writer.flush();
-//                    break;
-//                default:
-//                    _writer.write(_message);           // write the message
-//                    _writer.write('\u0000');
-//                    _writer.flush();
-//                    break;
-//            }
+            switch(type) {
+
+                case "label":
+                    _writer.write(_label); // write the message
+                    _writer.flush();
+                    break;
+                case "sound":
+                    int numBytes = _message.length;
+                    ByteBuffer b = ByteBuffer.allocate(4);
+                    b.putInt(numBytes);
+                    byte[] result = b.array();
+                    output.write(result);
+                    output.write(_message);
+                    output.flush();
+                    break;
+                case "picture":
+                    output.write(_message);
+                    output.flush();
+                    break;
+                case "settings":
+                    output.write(_message);
+                    output.flush();
+                    break;
+                default:
+                    break;
+            }
 
             final char[] buffer = new char[8];
             while (true) {

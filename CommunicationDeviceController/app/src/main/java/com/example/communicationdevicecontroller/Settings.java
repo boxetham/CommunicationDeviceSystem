@@ -1,6 +1,8 @@
 package com.example.communicationdevicecontroller;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -9,19 +11,23 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 public class Settings extends AppCompatActivity {
 
     private int volume;
-    private int brightness;
     private boolean music;
     private boolean vibration;
+    private TextView currVol;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        currVol = findViewById(R.id.lbCurrentVolume);
         getValues();
         configureSeekbars();
         configureSwitches();
@@ -58,24 +64,13 @@ public class Settings extends AppCompatActivity {
     }
 
     private void configureSeekbars() {
-        SeekBar brightnessBar = (SeekBar)findViewById(R.id.skbrBrightness);
-        brightnessBar.setProgress(brightness);
-        brightnessBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                brightness = progress;
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {            }
-        });
         SeekBar volumeBar = (SeekBar)findViewById(R.id.skbrVolume);
         volumeBar.setProgress(volume);
         volumeBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 volume = progress;
+                currVol.setText("" + volume);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {            }
@@ -87,7 +82,7 @@ public class Settings extends AppCompatActivity {
     private void getValues() {
         SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
         volume = prefs.getInt("volume", 0);
-        brightness = prefs.getInt("brightness",0);
+        currVol.setText("" + volume);
         music = prefs.getBoolean("music",false);
         vibration = prefs.getBoolean("vibration", false);
     }
@@ -96,14 +91,18 @@ public class Settings extends AppCompatActivity {
         SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt("volume", volume);
-        editor.putInt("brightness", brightness);
         editor.putBoolean("music", music);
         editor.putBoolean("vibration", vibration);
         editor.commit();
     }
 
+    private void sendValues() {
+        Bluetooth.sendSettings(vibration, music, volume);
+    }
+
     private void saveGoToMain() {
         saveValues();
+        sendValues();
         goToMain();
     }
 

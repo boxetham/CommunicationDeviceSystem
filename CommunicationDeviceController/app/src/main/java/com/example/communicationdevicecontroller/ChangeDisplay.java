@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 
 import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+import static java.lang.Math.min;
 
 public class ChangeDisplay extends AppCompatActivity {
 
@@ -54,11 +55,13 @@ public class ChangeDisplay extends AppCompatActivity {
     Dialog myDialog;
     public static final int WRITE_EXTERNAL = 5;
     public static final int CROP_FROM_CAMERA = 4;
-    private static final int RECORD_AUDIO = 3;
-    private static final int CHOOSE_PICTURE = 2;
-    private static final int TAKE_PICTURE = 1;
+    public static final int RECORD_AUDIO = 3;
+    public static final int CHOOSE_PICTURE = 2;
+    public static final int TAKE_PICTURE = 1;
     private static int numPictures;
+    private static boolean testDisplay;
     private Bitmap imageViewBitmap;
+    private String soundFilename;
     private SoundRecording recorder;
     private Pictures pictureSettings;
     private String[] soundBites;
@@ -84,10 +87,10 @@ public class ChangeDisplay extends AppCompatActivity {
         getIds(24);
     }
 
-    private void getIds(int size) {
-        for(int i = 1; i <= size; i++){
-            imageIds[numPicturesEncoding.get(size)][i-1] = getResources().getIdentifier("image" + size + "View" + i, "id", getPackageName());
-            labelIds[numPicturesEncoding.get(size)][i-1] = getResources().getIdentifier("lb" + numPictures + "Cpt" + i, "id", getPackageName());
+    private void getIds(int numPics) {
+        for(int i = 1; i <= numPics; i++){
+            imageIds[numPicturesEncoding.get(numPics)][i-1] = getResources().getIdentifier("image" + numPics + "View" + i, "id", getPackageName());
+            labelIds[numPicturesEncoding.get(numPics)][i-1] = getResources().getIdentifier("lb" + numPics + "Cpt" + i, "id", getPackageName());
         }
     }
 
@@ -99,6 +102,7 @@ public class ChangeDisplay extends AppCompatActivity {
         pictureSettings = new Pictures(this, this);
         SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
         numPictures = prefs.getInt("numPictures", 4);
+        soundBites = new String[numPictures];
         getImageViews(prefs);
         if (savedInstanceState != null) {
             currentTile = savedInstanceState.getInt("currentTile");
@@ -156,6 +160,22 @@ public class ChangeDisplay extends AppCompatActivity {
                 saveGoToMain();
             }
         });
+        findViewById(R.id.btToggle).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) { changeMode(); }
+        });
+    }
+
+    private void changeMode() {
+        testDisplay = !testDisplay;
+        if(testDisplay){
+            ((Button)findViewById(R.id.btToggle)).setText("Change Display");
+            ((TextView)findViewById(R.id.lbInstructions)).setText("Select tile to hear sound");
+
+        }else{
+            ((Button)findViewById(R.id.btToggle)).setText("Preview");
+            ((TextView)findViewById(R.id.lbInstructions)).setText("Select tile to update");
+        }
     }
 
     private void setupImageViews(){
@@ -172,7 +192,11 @@ public class ChangeDisplay extends AppCompatActivity {
             final int finalI = i;
             findViewById(id).setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    ShowCameraPopup(finalI);
+                    if(testDisplay){
+                        recorder.startPlaying(soundBites[finalI-1]);
+                    }else{
+                        ShowCameraPopup(finalI);
+                    }
                 }
             });
         }
@@ -263,7 +287,7 @@ public class ChangeDisplay extends AppCompatActivity {
         });
         scroll.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 370));
         LinearLayout ll = myDialog.findViewById(R.id.recordingsLayout);
-        for(String file : files){
+        for(final String file : files){
             final String filename = file.substring(0, file.lastIndexOf('.'));
             Button fileButton = new Button(myDialog.getContext());
             fileButton.setText(filename);
@@ -275,6 +299,7 @@ public class ChangeDisplay extends AppCompatActivity {
                     selectButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            soundFilename = filename;
                             myDialog.dismiss();
                             ShowTextPopup();
                         }
@@ -340,6 +365,7 @@ public class ChangeDisplay extends AppCompatActivity {
     }
 
     private void updateDisplay(Editable text) {
+        soundBites[currentTile-1] = soundFilename;
         TextView label = (TextView)findViewById(labelIds[numPicturesEncoding.get(numPictures)][currentTile-1]);
         label.setText(text);
         ImageView imageView = (ImageView) findViewById(imageIds[numPicturesEncoding.get(numPictures)][currentTile-1]);
@@ -360,6 +386,7 @@ public class ChangeDisplay extends AppCompatActivity {
         myDialog.findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                soundFilename = recorder.getName();
                 myDialog.dismiss();
                 ShowTextPopup();
             }
@@ -369,7 +396,7 @@ public class ChangeDisplay extends AppCompatActivity {
     }
 
     private void setNumberOfPictures(int numPics) {
-        soundBites = new String[numPics];
+        copyData(numPictures, numPics);
         numPictures = numPics;
         changeVisibility(findViewById(R.id.images4), View.INVISIBLE);
         changeVisibility(findViewById(R.id.images8), View.INVISIBLE);
@@ -389,6 +416,23 @@ public class ChangeDisplay extends AppCompatActivity {
                 changeVisibility(findViewById(R.id.images24), View.VISIBLE);
                 break;
         }
+    }
+
+    private void copyData(int oldNumPics, int newNumPics) {
+        String[] newSoundBites = new String[newNumPics];
+        for(int i = 0; i < min(oldNumPics, newNumPics); i++){
+            ImageView oldImageView = (ImageView) findViewById(imageIds[numPicturesEncoding.get(oldNumPics)][i]);
+            ImageView newImageView = (ImageView) findViewById(imageIds[numPicturesEncoding.get(newNumPics)][i]);
+            BitmapDrawable bitmap = ((BitmapDrawable)oldImageView.getDrawable());
+            BitmapDrawable ob = new BitmapDrawable(getResources(), bitmap.getBitmap());
+            newImageView.setImageDrawable(ob);
+//            newImageView.setImageBitmap(bitmap.getBitmap());
+            TextView oldTextView = (TextView) findViewById(labelIds[numPicturesEncoding.get(oldNumPics)][i]);
+            TextView newTextView = (TextView) findViewById(labelIds[numPicturesEncoding.get(newNumPics)][i]);
+            newTextView.setText(oldTextView.getText());
+            newSoundBites[i] = soundBites[i];
+        }
+        soundBites = newSoundBites;
     }
 
     private void changeVisibility(final View view, final int visibilty){
@@ -475,7 +519,7 @@ public class ChangeDisplay extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void saveDisplayInfo() {
         String[] labels = new String[numPictures];
-        Bitmap[] imageBitMaps = new Bitmap[numPictures];
+        String[] pictureFiles = new String[numPictures];
         checkPermissions(WRITE_EXTERNAL);
         SharedPreferences.Editor editor = this.getPreferences(Context.MODE_PRIVATE).edit();
         editor.putInt("numPictures", numPictures);
@@ -488,9 +532,9 @@ public class ChangeDisplay extends AppCompatActivity {
             editor.putString("ImageView" + i, picturefile);
             editor.putString("Label" + i, labelText);
             labels[i-1] = labelText;
-            imageBitMaps[i-1] = imageBitMap;
+            pictureFiles[i-1] = picturefile;
         }
         editor.commit();
-        Bluetooth.sendDisplay(labels, imageBitMaps);
+        Bluetooth.sendDisplay(labels, pictureFiles, soundBites);
     }
 }
