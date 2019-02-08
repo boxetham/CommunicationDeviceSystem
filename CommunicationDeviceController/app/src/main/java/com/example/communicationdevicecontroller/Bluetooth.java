@@ -323,7 +323,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
     public static void sendSettings(boolean vibration, boolean music, int volume) {
         ArrayList<Byte> settings = new ArrayList<>();
         settings.add((byte)0);
-        settings.add((byte)volume);
+        settings.addAll(getVolume(volume));
         settings.add((byte)1);
         settings.add(booleanEncoding.get(vibration));
         settings.add((byte)2);
@@ -344,7 +344,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
     private static ArrayList<Byte> getVolume(int volume) {
         ByteBuffer b = ByteBuffer.allocate(4);
         b.putInt(volume);
-        byte[] arr = new byte[4];
+        byte[] arr = b.array();
         ArrayList<Byte> vol = new ArrayList<>();
         for(int i = 0; i < arr.length; i++){
             vol.add(arr[i]);

@@ -15,6 +15,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -423,10 +424,8 @@ public class ChangeDisplay extends AppCompatActivity {
         for(int i = 0; i < min(oldNumPics, newNumPics); i++){
             ImageView oldImageView = (ImageView) findViewById(imageIds[numPicturesEncoding.get(oldNumPics)][i]);
             ImageView newImageView = (ImageView) findViewById(imageIds[numPicturesEncoding.get(newNumPics)][i]);
-            BitmapDrawable bitmap = ((BitmapDrawable)oldImageView.getDrawable());
-            BitmapDrawable ob = new BitmapDrawable(getResources(), bitmap.getBitmap());
-            newImageView.setImageDrawable(ob);
-//            newImageView.setImageBitmap(bitmap.getBitmap());
+            Drawable bitmap = oldImageView.getDrawable();
+            newImageView.setImageDrawable(bitmap);
             TextView oldTextView = (TextView) findViewById(labelIds[numPicturesEncoding.get(oldNumPics)][i]);
             TextView newTextView = (TextView) findViewById(labelIds[numPicturesEncoding.get(newNumPics)][i]);
             newTextView.setText(oldTextView.getText());
