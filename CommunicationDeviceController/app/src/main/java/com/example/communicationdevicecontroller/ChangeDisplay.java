@@ -121,6 +121,7 @@ public class ChangeDisplay extends AppCompatActivity {
 
     private void getImageViews(SharedPreferences prefs) {
         for (int i = 1; i <= numPictures; i++) {
+            soundBites[i-1] = prefs.getString("Sound" + i, "");
             String imageFile = prefs.getString("ImageView" + i, "");
             String label = prefs.getString("Label" + i, "label");
             int imageId = getResources().getIdentifier("image" + numPictures + "View" + i, "id", getPackageName());
@@ -530,6 +531,7 @@ public class ChangeDisplay extends AppCompatActivity {
             String picturefile = pictureSettings.writeImage(imageBitMap, numPictures, i);
             editor.putString("ImageView" + i, picturefile);
             editor.putString("Label" + i, labelText);
+            editor.putString("Sound" + i, soundBites[i-1]);
             labels[i-1] = labelText;
             pictureFiles[i-1] = picturefile;
         }
