@@ -536,6 +536,6 @@ public class ChangeDisplay extends AppCompatActivity {
             pictureFiles[i-1] = picturefile;
         }
         editor.commit();
-        Bluetooth.sendDisplay(labels, pictureFiles, soundBites);
+        Bluetooth.sendDisplay(labels, pictureFiles, soundBites, recorder);
     }
 }

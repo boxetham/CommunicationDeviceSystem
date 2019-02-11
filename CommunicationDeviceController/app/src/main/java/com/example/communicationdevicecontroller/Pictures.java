@@ -134,7 +134,7 @@ public class Pictures {
                 file.createNewFile();
             }
             fOut = new FileOutputStream(file);
-            imageBitMap.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
+            imageBitMap.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
             fOut.flush(); // Not really required
             fOut.close(); // do not forget to close the stream
         } catch (Exception e) {

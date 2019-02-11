@@ -30,7 +30,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.CookieHandler;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,10 +61,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
     private TextView _tvBtState;
 
     private SoundRecording recording;
-
-    public Bluetooth(){
-
-    }
+    private static ArrayList<Byte> displayInfo = new ArrayList<>();
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
 
@@ -149,7 +146,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
                     });
                     builder.show();
                 }
-                writeRead = new WriteRead(_socket, getbyteArray(sound), "sound");//RED_LED);
+                writeRead = new WriteRead(_socket, getbyteArray(sendFile("wavtest", "sound", recording)), "display");//RED_LED);
                 new Thread(writeRead).start();
                 break;
             case R.id.buttonToggleRedLed:
@@ -323,7 +320,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
     public static void sendSettings(boolean vibration, boolean music, int volume) {
         ArrayList<Byte> settings = new ArrayList<>();
         settings.add((byte)0);
-        settings.addAll(getVolume(volume));
+        settings.addAll(getByteArrayList(volume));
         settings.add((byte)1);
         settings.add(booleanEncoding.get(vibration));
         settings.add((byte)2);
@@ -341,7 +338,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
         return arr;
     }
 
-    private static ArrayList<Byte> getVolume(int volume) {
+    private static ArrayList<Byte> getByteArrayList(int volume) {
         ByteBuffer b = ByteBuffer.allocate(4);
         b.putInt(volume);
         byte[] arr = b.array();
@@ -352,26 +349,78 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
         return vol;
     }
 
-    public static void sendDisplay(String[] labels, String[] pictureFiles, String[] soundFiles) {
+    public static void sendDisplay(String[] labels, String[] pictureFiles, String[] soundFiles, SoundRecording rec) {
+        displayInfo.clear();
+        displayInfo.addAll(sendDisplayConfig(labels.length));
         for(int i = 0; i < labels.length; i++){
-            sendFile(pictureFiles[i], "picture");
-            sendFile(soundFiles[i], "sound");
-            sendLabel(labels[i]);
+            displayInfo.addAll(sendFile(pictureFiles[i], "picture", rec));
+            displayInfo.addAll(sendFile(soundFiles[i], "sound", rec));
+            displayInfo.addAll(sendLabel(labels[i]));
         }
-    }
-
-    private static void sendLabel(String label) {
-        WriteRead writeRead = new WriteRead(_socket, label, "label");
+        WriteRead writeRead = new WriteRead(_socket, getbyteArray(displayInfo), "display");
         new Thread(writeRead).start();
     }
 
-    private static void sendFile(String file, String type) {
-        byte[] arr = readFile(file);
-        WriteRead writeRead = new WriteRead(_socket, arr, type);
-        new Thread(writeRead).start();
+    private static ArrayList<Byte> sendDisplayConfig(int numPictures) {
+        int row = 0;
+        int col = 0;
+        switch (numPictures){
+            case 4:
+                row = 1;
+                col = 4;
+                break;
+            case 8:
+                row = 2;
+                col = 4;
+                break;
+            case 15:
+                row = 3;
+                col = 5;
+                break;
+            case 24:
+                row = 4;
+                col = 6;
+                break;
+        }
+        ArrayList<Byte> settings = new ArrayList<>();
+        settings.add((byte)127);
+        settings.addAll(getByteArrayList(row));
+        settings.addAll(getByteArrayList(col));
+        return  settings;
     }
 
-    private static byte[] readFile(String pictureFile) {
+    private static ArrayList<Byte> sendLabel(String label) {
+        ArrayList<Byte> msg = new ArrayList<>();
+        msg.addAll(getByteArrayList(label.length()));
+        msg.addAll(getBytesFromString(label));
+        return msg;
+    }
+
+    private static ArrayList<Byte> getBytesFromString(String str){
+        byte[] bytes = new byte[0];
+        try {
+            bytes = str.getBytes("UTF-8");
+        }catch (Exception e){}
+        ArrayList<Byte> arr = new ArrayList<>();
+        for(int i = 0; i < bytes.length; i++){
+            arr.add(bytes[i]);
+        }
+        return arr;
+    }
+
+    private static ArrayList<Byte> sendFile(String file, String type, SoundRecording recording) {
+        ArrayList<Byte> msg = new ArrayList<>();
+        ArrayList<Byte> arr = readFile(file);
+        if(type.equals("sound")){
+            String soundFile = recording.getFile("wavtest");
+            arr = readFile(soundFile);
+            msg.addAll(getByteArrayList(arr.size()));
+        }
+        msg.addAll(arr);
+        return msg;
+    }
+
+    private static ArrayList<Byte> readFile(String pictureFile) {
         ArrayList<Byte> sound = new ArrayList<>();
         try {
             InputStream inputStream = new FileInputStream(pictureFile);
@@ -385,7 +434,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
             }
         }catch(Exception e){
         }
-        return getbyteArray(sound);
+        return sound;
     }
 }
 
@@ -426,15 +475,11 @@ class WriteRead implements Runnable {
             switch(type) {
 
                 case "label":
+                    _writer.write(_label.length());
                     _writer.write(_label); // write the message
                     _writer.flush();
                     break;
                 case "sound":
-                    int numBytes = _message.length;
-                    ByteBuffer b = ByteBuffer.allocate(4);
-                    b.putInt(numBytes);
-                    byte[] result = b.array();
-                    output.write(result);
                     output.write(_message);
                     output.flush();
                     break;
@@ -443,6 +488,14 @@ class WriteRead implements Runnable {
                     output.flush();
                     break;
                 case "settings":
+                    output.write(_message);
+                    output.flush();
+                    break;
+                case "config":
+                    output.write(_message);
+                    output.flush();
+                    break;
+                case "display":
                     output.write(_message);
                     output.flush();
                     break;
