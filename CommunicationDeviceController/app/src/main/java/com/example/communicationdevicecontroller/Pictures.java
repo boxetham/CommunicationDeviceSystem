@@ -2,100 +2,36 @@ package com.example.communicationdevicecontroller;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
-import android.net.Uri;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class Pictures {
 
-
-    private Uri mImageCaptureUri = null;
     private Context context;
-    private Activity activity;
 
-    public Pictures(Context context, Activity activity){
+    public Pictures(Context context){
         this.context = context;
-        this.activity = activity;
     }
 
-    public void doCrop() {
-        final ArrayList<CropOption> cropOptions = new ArrayList<CropOption>();
-
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setType("image/*");
-
-        List<ResolveInfo> list = context.getPackageManager().queryIntentActivities(intent, 0);
-
-        int size = list.size();
-
-        if (size == 0) {
-            //sad
-            return;
-        } else {
-            intent.setData(mImageCaptureUri);
-
-            intent.putExtra("outputX", 200);
-            intent.putExtra("outputY", 200);
-            intent.putExtra("aspectX", 1);
-            intent.putExtra("aspectY", 1);
-            intent.putExtra("scale", true);
-            intent.putExtra("return-data", true);
-
-            if (size == 1) {
-                Intent i = new Intent(intent);
-                ResolveInfo res = list.get(0);
-
-                i.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
-
-                activity.startActivityForResult(i, ChangeDisplay.CROP_FROM_CAMERA);
-            } else {
-                for (ResolveInfo res : list) {
-                    final CropOption co = new CropOption();
-
-                    co.title = context.getPackageManager().getApplicationLabel(res.activityInfo.applicationInfo);
-                    co.icon = context.getPackageManager().getApplicationIcon(res.activityInfo.applicationInfo);
-                    co.appIntent = new Intent(intent);
-
-                    co.appIntent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
-
-                    cropOptions.add(co);
-                }
-
-                CropOptionAdapter adapter = new CropOptionAdapter(context.getApplicationContext(), cropOptions);
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Choose Crop App");
-                builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int item) {
-                        activity.startActivityForResult(cropOptions.get(item).appIntent, ChangeDisplay.CROP_FROM_CAMERA);
-                    }
-                });
-
-                builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                    }
-                });
-
-                AlertDialog alert = builder.create();
-
-                alert.show();
-            }
-        }
+    public void doCrop(Bitmap bitmap) {
+        Crop.setBitmap(bitmap);
+        Crop.setPictureSettings(this);
+        Intent intent = new Intent(context, Crop.class);
+        ((Activity)context).startActivityForResult(intent, ChangeDisplay.CROP);
     }
 
     public File createImageFile() {
@@ -118,10 +54,6 @@ public class Pictures {
         return null;
     }
 
-    public void setImageURI(Uri uri) {
-        mImageCaptureUri = uri;
-    }
-
     private String getPicturesDir() {
         return context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
     }
@@ -141,5 +73,37 @@ public class Pictures {
             e.printStackTrace();
         }
         return file.getAbsolutePath();
+    }
+
+    public Bitmap getImageBitmap(String filename){
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        return BitmapFactory.decodeFile(filename, options);
+    }
+
+    public ArrayList<Byte> readImageFile(String pictureFile) {
+        ArrayList<Byte> picture = new ArrayList<>();
+        try {
+            InputStream inputStream = new FileInputStream(pictureFile);
+            byte[] bytedata = new byte[1024];
+            int    bytesRead = inputStream.read(bytedata);
+            while(bytesRead != -1) {
+                for(int i = 0; i < bytesRead; i++){
+                    picture.add(bytedata[i]);
+                }
+                bytesRead = inputStream.read(bytedata);
+            }
+        }catch(Exception e){ }
+        return picture;
+    }
+
+    public void deleteFile(String filepath) {
+        File file = new File(filepath);
+        file.delete();
+        if(file.exists()){
+            if(file.exists()){
+                context.deleteFile(file.getName());
+            }
+        }
     }
 }

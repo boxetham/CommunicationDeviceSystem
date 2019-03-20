@@ -5,11 +5,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.View;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -76,17 +82,6 @@ public class SoundRecording {
         }
     }
 
-//    public void startPreRecordedPlaying(String fileName) {
-//        mPlayer = new MediaPlayer();
-//        try {
-//            mPlayer.setDataSource(fileName);
-//            mPlayer.prepare();
-//            mPlayer.start();
-//        } catch (IOException e) {
-//            Log.e("auido fail", "prepare() failed");
-//        }
-//    }
-
     private void stopPlaying() {
         mPlayer.release();
         mPlayer = null;
@@ -131,8 +126,43 @@ public class SoundRecording {
         return testName;
     }
 
-    public String getFile(String filename) {
+    private String getFile(String filename) {
         return pathToFolder + "/" + filename + ".wav";
+    }
+
+    public ArrayList<Byte> readSoundFile(String soundFile) {
+        ArrayList<Byte> sound = new ArrayList<>();
+        try {
+            InputStream inputStream = new FileInputStream(getFile(soundFile));
+            byte[] bytedata = new byte[1024];
+            int    bytesRead = inputStream.read(bytedata);
+            while(bytesRead != -1) {
+                for(int i = 0; i < bytesRead; i++){
+                    sound.add(bytedata[i]);
+                }
+                bytesRead = inputStream.read(bytedata);
+            }
+        }catch(Exception e){
+        }
+        return sound;
+    }
+
+    public String writeSoundFile(InputStream inputStream, String filename) {
+        ArrayList<Byte> sound = new ArrayList<>();
+        String filepath = "";
+        try {
+            byte[] bytedata = new byte[1024];
+            int    bytesRead = inputStream.read(bytedata);
+            while(bytesRead != -1) {
+                for(int i = 0; i < bytesRead; i++){
+                    sound.add(bytedata[i]);
+                }
+                bytesRead = inputStream.read(bytedata);
+            }
+            filepath = getFile(filename);
+            //write out image
+        }catch(Exception e){ }
+        return filepath;
     }
 
     class RecordButton extends android.support.v7.widget.AppCompatButton {

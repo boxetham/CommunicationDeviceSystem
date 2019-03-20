@@ -1,8 +1,6 @@
 package com.example.communicationdevicecontroller;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,7 +11,10 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Settings extends AppCompatActivity {
 
@@ -97,7 +98,7 @@ public class Settings extends AppCompatActivity {
     }
 
     private void sendValues() {
-        Bluetooth.sendSettings(vibration, music, volume);
+        Bluetooth.sendSettings(new SettingsPackager(volume, vibration, music));
     }
 
     private void saveGoToMain() {

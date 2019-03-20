@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -34,6 +33,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +55,7 @@ public class ChangeDisplay extends AppCompatActivity {
 
     Dialog myDialog;
     public static final int WRITE_EXTERNAL = 5;
-    public static final int CROP_FROM_CAMERA = 4;
+    public static final int CROP = 4;
     public static final int RECORD_AUDIO = 3;
     public static final int CHOOSE_PICTURE = 2;
     public static final int TAKE_PICTURE = 1;
@@ -100,7 +100,7 @@ public class ChangeDisplay extends AppCompatActivity {
         labelIds = new int[4][24];
         myDialog = new Dialog(this);
         recorder = new SoundRecording(this);
-        pictureSettings = new Pictures(this, this);
+        pictureSettings = new Pictures(this);
         SharedPreferences prefs = this.getPreferences(Context.MODE_PRIVATE);
         numPictures = prefs.getInt("numPictures", 4);
         soundBites = new String[numPictures];
@@ -126,10 +126,7 @@ public class ChangeDisplay extends AppCompatActivity {
             String label = prefs.getString("Label" + i, "label");
             int imageId = getResources().getIdentifier("image" + numPictures + "View" + i, "id", getPackageName());
             int labelId = getResources().getIdentifier("lb" + numPictures + "Cpt" + i, "id", getPackageName());
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-            Bitmap bitmap = BitmapFactory.decodeFile(imageFile, options);
-            ((ImageView)findViewById(imageId)).setImageBitmap(bitmap);
+            ((ImageView)findViewById(imageId)).setImageBitmap(pictureSettings.getImageBitmap(imageFile));
             ((TextView)findViewById(labelId)).setText(label);
         }
     }
@@ -207,6 +204,7 @@ public class ChangeDisplay extends AppCompatActivity {
     private void ShowCameraPopup(int id) {
         myDialog.setContentView(R.layout.popup_choose_picture);
         currentTile = id;
+
         myDialog.findViewById(R.id.btCamera).setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             public void onClick(View v) {
@@ -334,7 +332,7 @@ public class ChangeDisplay extends AppCompatActivity {
 
     private void getFileName(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Enter name for sound file with no spaces");
+        builder.setTitle("Enter name for sound file with noimage spaces");
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
@@ -480,26 +478,32 @@ public class ChangeDisplay extends AppCompatActivity {
         switch (requestCode) {
             case TAKE_PICTURE:
                 if (resultCode == Activity.RESULT_OK) {
-//                    Bundle extras = data.getExtras();
-//                    Bitmap imageBitmap = (Bitmap) extras.get("data");
-                    Intent choosePictureIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    if (choosePictureIntent.resolveActivity(getPackageManager()) != null) {
-                        startActivityForResult(choosePictureIntent, CHOOSE_PICTURE);
-                    }
+                    Bundle extras = data.getExtras();
+                    Bitmap imageBitmap = (Bitmap) extras.get("data");
+                    pictureSettings.doCrop(imageBitmap);
                 }
                 break;
             case CHOOSE_PICTURE:
                 if (resultCode == Activity.RESULT_OK) {
                     Uri imageUri = data.getData();
-                    pictureSettings.setImageURI(imageUri);
-                    pictureSettings.doCrop();
+                    Bitmap bitmap = null;
+                    try {
+                        bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    pictureSettings.doCrop(bitmap);
                 }
                 break;
-            case CROP_FROM_CAMERA:
+            case CROP:
                 Bundle extras = data.getExtras();
                 if (extras != null) {
-                    imageViewBitmap = extras.getParcelable("data");
-                    ShowSoundPopup();
+                    String file = data.getStringExtra("imagefile");
+                    imageViewBitmap = pictureSettings.getImageBitmap(file);
+                    pictureSettings.deleteFile(file);
+                    if(imageViewBitmap!=null){
+                        ShowSoundPopup();
+                    }
                 }
                 break;
         }
@@ -536,6 +540,6 @@ public class ChangeDisplay extends AppCompatActivity {
             pictureFiles[i-1] = picturefile;
         }
         editor.commit();
-        Bluetooth.sendDisplay(labels, pictureFiles, soundBites, recorder);
+        Bluetooth.sendDisplay(new DisplayPackager(numPictures, labels, pictureFiles, soundBites, recorder, pictureSettings));
     }
 }

@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         myDialog.findViewById(R.id.btYes).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //reset to default view on device
+                LoadDefaultDisplay display = new LoadDefaultDisplay(getApplicationContext());
+                display.loadDefaultDisplay();
                 myDialog.dismiss();
             }
         });
