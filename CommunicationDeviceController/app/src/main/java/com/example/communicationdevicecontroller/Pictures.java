@@ -1,9 +1,7 @@
 package com.example.communicationdevicecontroller;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,7 +29,7 @@ public class Pictures {
         Crop.setBitmap(bitmap);
         Crop.setPictureSettings(this);
         Intent intent = new Intent(context, Crop.class);
-        ((Activity)context).startActivityForResult(intent, ChangeDisplay.CROP);
+        ((Activity)context).startActivityForResult(intent, PictureSelection.CROP);
     }
 
     public File createImageFile() {

@@ -5,9 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 public class LoadDefaultDisplay {
 
@@ -18,15 +16,19 @@ public class LoadDefaultDisplay {
     }
 
     public void loadDefaultDisplay() {
+        Display currentDisplay = Display.getInstance();
         Pictures pictures = new Pictures(context);
         SoundRecording soundRecording = new SoundRecording(context);
         String[] words = new String[]{"yes","no","more","stop"};
         String[] imageFiles = new String[words.length];
         String[] soundFiles = new String[words.length];
+        Bitmap[] images = new Bitmap[words.length];
         for(int i = 0; i < imageFiles.length; i++){
-            imageFiles[i] = pictures.writeImage(getBitMap(words[i] + "image"), imageFiles.length, i);
+            String imageFile = pictures.writeImage(getBitMap(words[i] + "image"), imageFiles.length, i+1);
             soundFiles[i] = getSoundFilePath(words[i] + "sound", soundRecording);
+            images[i] = pictures.getImageBitmap(imageFile);
         }
+        currentDisplay.setDisplay(images, soundFiles, words);
         DisplayPackager packager = new DisplayPackager(words.length, words, imageFiles, soundFiles, soundRecording, pictures);
         Bluetooth.sendDisplay(packager);
     }
@@ -44,7 +46,6 @@ public class LoadDefaultDisplay {
     public String getSoundFilePath(String name, SoundRecording soundRecording){
         InputStream bm = context.getResources().openRawResource(context.getResources().getIdentifier(name,
                 "raw", context.getPackageName()));
-        soundRecording.writeSoundFile(bm, name);
-        return "";
+        return soundRecording.writeSoundFile(bm, name);
     }
 }

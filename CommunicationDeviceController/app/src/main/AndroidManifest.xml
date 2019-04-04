@@ -21,24 +21,21 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Crop">
-        </activity>
+        <activity android:name=".LabelSelection"></activity>
+        <activity android:name=".SoundSelection" />
+        <activity android:name=".Crop" />
         <activity
             android:name=".Bluetooth"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.media.action.IMAGE_CAPTURE" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+            android:screenOrientation="portrait" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ChangeDisplay">
+        <activity android:name=".ChangeDisplay" />
+        <activity android:name=".PictureSelection">
             <intent-filter>
                 <action android:name="android.media.action.IMAGE_CAPTURE" />
 

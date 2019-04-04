@@ -5,24 +5,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SoundRecording {
 
@@ -148,21 +144,20 @@ public class SoundRecording {
     }
 
     public String writeSoundFile(InputStream inputStream, String filename) {
-        ArrayList<Byte> sound = new ArrayList<>();
-        String filepath = "";
+        String filepath = getFile(filename);
+        File file = new File(Environment.getExternalStorageDirectory() + File.separator + filepath);
+        BufferedInputStream in = new BufferedInputStream(inputStream);
+        int read;
+        byte[] buff = new byte[1024];
         try {
-            byte[] bytedata = new byte[1024];
-            int    bytesRead = inputStream.read(bytedata);
-            while(bytesRead != -1) {
-                for(int i = 0; i < bytesRead; i++){
-                    sound.add(bytedata[i]);
-                }
-                bytesRead = inputStream.read(bytedata);
+            file.createNewFile();
+            OutputStream out = new FileOutputStream(filepath);
+            while ((read = in.read(buff)) > 0) {
+                out.write(buff, 0, read);
             }
-            filepath = getFile(filename);
-            //write out image
-        }catch(Exception e){ }
-        return filepath;
+            out.flush();
+        }catch (Exception e){}
+        return filename;
     }
 
     class RecordButton extends android.support.v7.widget.AppCompatButton {
