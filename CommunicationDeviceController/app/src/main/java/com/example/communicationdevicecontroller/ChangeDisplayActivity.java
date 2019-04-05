@@ -1,9 +1,12 @@
 package com.example.communicationdevicecontroller;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -13,10 +16,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChangeDisplay extends AppCompatActivity {
+public class ChangeDisplayActivity extends AppCompatActivity {
 
     private static Map<Integer, String[]> permissionMap = new HashMap<Integer, String[]>(){{
         put(WRITE_EXTERNAL, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE});
@@ -28,7 +35,7 @@ public class ChangeDisplay extends AppCompatActivity {
     public static final int WRITE_EXTERNAL = 5;
     private static boolean testDisplay;
     private SoundRecording recorder;
-    private Pictures pictureSettings;
+    private PictureManager pictureSettings;
     public static Display currentDisplay;
     private int[][] imageIds;
     private int[][] labelIds;
@@ -62,7 +69,7 @@ public class ChangeDisplay extends AppCompatActivity {
         imageIds = new int[4][24];
         labelIds = new int[4][24];
         recorder = new SoundRecording(this);
-        pictureSettings = new Pictures(this);
+        pictureSettings = new PictureManager(this);
         currentDisplay = Display.getInstance();
         if (savedInstanceState != null) {
             for(Integer numPics : numPicturesEncoding.keySet()){
@@ -159,7 +166,7 @@ public class ChangeDisplay extends AppCompatActivity {
     }
 
     private void getImage() {
-        Intent intent = new Intent(this, PictureSelection.class);
+        Intent intent = new Intent(this, PictureSelectionActivity.class);
         startActivity(intent);
     }
 
@@ -240,10 +247,10 @@ public class ChangeDisplay extends AppCompatActivity {
         String[] pictureFiles = new String[numPictures];
         checkPermissions(WRITE_EXTERNAL);
         for (int i = 1; i <= numPictures; i++) {
-            String picturefile = pictureSettings.writeImage(currentDisplay.getImage(i), numPictures, i);
+            String picturefile = pictureSettings.writeImage(currentDisplay.getImage(i-1), numPictures, i);
             pictureFiles[i-1] = picturefile;
         }
-        Bluetooth.sendDisplay(new DisplayPackager(numPictures, currentDisplay.getLabels(),
+        BluetoothActivity.sendDisplay(new DisplayPackager(numPictures, currentDisplay.getLabels(),
                                                     pictureFiles, currentDisplay.getSounds(),
                                                     recorder, pictureSettings));
     }

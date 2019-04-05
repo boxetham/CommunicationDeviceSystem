@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SoundSelection extends AppCompatActivity {
+public class SoundSelectionActivity extends AppCompatActivity {
 
     private static Map<Integer, String[]> permissionMap = new HashMap<Integer, String[]>(){{
         put(RECORD_AUDIO, new String[]{Manifest.permission.RECORD_AUDIO});
@@ -67,7 +67,7 @@ public class SoundSelection extends AppCompatActivity {
     }
 
     private void cancel() {
-        Intent intent = new Intent(this, ChangeDisplay.class);
+        Intent intent = new Intent(this, ChangeDisplayActivity.class);
         startActivity(intent);
     }
 
@@ -112,7 +112,7 @@ public class SoundSelection extends AppCompatActivity {
     }
 
     private void back() {
-        Intent intent = new Intent(this, SoundSelection.class);
+        Intent intent = new Intent(this, SoundSelectionActivity.class);
         startActivity(intent);
     }
 
@@ -170,8 +170,8 @@ public class SoundSelection extends AppCompatActivity {
     }
 
     private void next(String filename) {
-        ChangeDisplay.currentDisplay.setTempSound(filename);
-        Intent intent = new Intent(this, LabelSelection.class);
+        ChangeDisplayActivity.currentDisplay.setTempSound(filename);
+        Intent intent = new Intent(this, LabelSelectionActivity.class);
         startActivity(intent);
     }
 

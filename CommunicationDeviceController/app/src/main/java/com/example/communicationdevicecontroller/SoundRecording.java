@@ -127,6 +127,9 @@ public class SoundRecording {
     }
 
     public ArrayList<Byte> readSoundFile(String soundFile) {
+        if(soundFile == null){
+            return new ArrayList<>();
+        }
         ArrayList<Byte> sound = new ArrayList<>();
         try {
             InputStream inputStream = new FileInputStream(getFile(soundFile));

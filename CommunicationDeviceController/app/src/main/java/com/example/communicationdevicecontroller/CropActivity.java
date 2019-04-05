@@ -1,10 +1,7 @@
 package com.example.communicationdevicecontroller;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,16 +11,11 @@ import android.widget.SeekBar;
 
 import com.fenchtose.nocropper.CropperView;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-
-public class Crop extends AppCompatActivity {
+public class CropActivity extends AppCompatActivity {
 
     private CropperView cropImageView;
     private static Bitmap image;
-    private static Pictures pictureSettings;
+    private static PictureManager pictureSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,5 +64,5 @@ public class Crop extends AppCompatActivity {
         image = bitmap;
     }
 
-    public static void setPictureSettings(Pictures pictures) { pictureSettings = pictures; }
+    public static void setPictureSettings(PictureManager pictureManager) { pictureSettings = pictureManager; }
 }

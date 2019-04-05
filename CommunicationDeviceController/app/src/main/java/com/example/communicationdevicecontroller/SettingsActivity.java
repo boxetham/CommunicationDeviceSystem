@@ -11,7 +11,7 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-public class Settings extends AppCompatActivity {
+public class SettingsActivity extends AppCompatActivity {
 
     private int volume;
     private boolean music;
@@ -93,7 +93,7 @@ public class Settings extends AppCompatActivity {
     }
 
     private void sendValues() {
-        Bluetooth.sendSettings(new SettingsPackager(volume, vibration, music));
+        BluetoothActivity.sendSettings(new SettingsPackager(volume, vibration, music));
     }
 
     private void saveGoToMain() {

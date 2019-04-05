@@ -24,7 +24,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class Bluetooth extends AppCompatActivity implements View.OnClickListener {
+public class BluetoothActivity extends AppCompatActivity implements View.OnClickListener {
     public final int REQUEST_ENABLE_BT = 1;
     public final String SERIAL_SERVICE = "00001101-0000-1000-8000-00805F9B34FB";
 
@@ -217,6 +217,7 @@ public class Bluetooth extends AppCompatActivity implements View.OnClickListener
         for (String setting : settingInfo.getSettings()){
             settings.addAll(settingInfo.getSetting(setting));
         }
+        settings.add((byte)127);
         WriteRead writeRead = new WriteRead(_socket, getbyteArray(settings));
         new Thread(writeRead).start();
     }

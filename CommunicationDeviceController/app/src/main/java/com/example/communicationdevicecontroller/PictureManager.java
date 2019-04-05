@@ -17,19 +17,19 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class Pictures {
+public class PictureManager {
 
     private Context context;
 
-    public Pictures(Context context){
+    public PictureManager(Context context){
         this.context = context;
     }
 
     public void doCrop(Bitmap bitmap) {
-        Crop.setBitmap(bitmap);
-        Crop.setPictureSettings(this);
-        Intent intent = new Intent(context, Crop.class);
-        ((Activity)context).startActivityForResult(intent, PictureSelection.CROP);
+        CropActivity.setBitmap(bitmap);
+        CropActivity.setPictureSettings(this);
+        Intent intent = new Intent(context, CropActivity.class);
+        ((Activity)context).startActivityForResult(intent, PictureSelectionActivity.CROP);
     }
 
     public File createImageFile() {
@@ -52,11 +52,14 @@ public class Pictures {
         return null;
     }
 
-    private String getPicturesDir() {
+    public String getPicturesDir() {
         return context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();
     }
 
     public String writeImage(Bitmap imageBitMap, int numPictures, int i) {
+        if(imageBitMap == null){
+            return null;
+        }
         OutputStream fOut = null;
         File file = new File(getPicturesDir(), "Image" + numPictures + "View"+i+".jpg");
         try {
@@ -80,6 +83,9 @@ public class Pictures {
     }
 
     public ArrayList<Byte> readImageFile(String pictureFile) {
+        if(pictureFile == null){
+            return new ArrayList<>();
+        }
         ArrayList<Byte> picture = new ArrayList<>();
         try {
             InputStream inputStream = new FileInputStream(pictureFile);

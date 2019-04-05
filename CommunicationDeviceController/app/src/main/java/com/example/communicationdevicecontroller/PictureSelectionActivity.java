@@ -2,8 +2,6 @@ package com.example.communicationdevicecontroller;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -23,7 +21,7 @@ import java.util.Map;
 
 import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
 
-public class PictureSelection extends AppCompatActivity {
+public class PictureSelectionActivity extends AppCompatActivity {
 
     private static Map<Integer, String[]> permissionMap = new HashMap<Integer, String[]>(){{
         put(TAKE_PICTURE, new String[]{Manifest.permission.CAMERA});
@@ -34,13 +32,13 @@ public class PictureSelection extends AppCompatActivity {
     public static final int CROP = 4;
     public static final int CHOOSE_PICTURE = 2;
     public static final int TAKE_PICTURE = 1;
-    private Pictures pictureSettings;
+    private PictureManager pictureSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picture_selection);
-        pictureSettings = new Pictures(this);
+        pictureSettings = new PictureManager(this);
         findViewById(R.id.btCamera).setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             public void onClick(View v) {
@@ -73,7 +71,7 @@ public class PictureSelection extends AppCompatActivity {
     }
 
     private void cancel() {
-        Intent intent = new Intent(this, ChangeDisplay.class);
+        Intent intent = new Intent(this, ChangeDisplayActivity.class);
         startActivity(intent);
     }
 
@@ -125,8 +123,8 @@ public class PictureSelection extends AppCompatActivity {
                     Bitmap imageViewBitmap = pictureSettings.getImageBitmap(file);
                     pictureSettings.deleteFile(file);
                     if(imageViewBitmap!=null){
-                        ChangeDisplay.currentDisplay.setTempImage(imageViewBitmap);
-                        Intent intent = new Intent(this, SoundSelection.class);
+                        ChangeDisplayActivity.currentDisplay.setTempImage(imageViewBitmap);
+                        Intent intent = new Intent(this, SoundSelectionActivity.class);
                         startActivity(intent);
                     }
                 }

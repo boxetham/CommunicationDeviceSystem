@@ -60,17 +60,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void goToBluetooth() {
-        Intent intent = new Intent(this, Bluetooth.class);
+        Intent intent = new Intent(this, BluetoothActivity.class);
         startActivity(intent);
     }
 
     private void goToChangeDisplay() {
-        Intent intent = new Intent(this, ChangeDisplay.class);
+        Intent intent = new Intent(this, ChangeDisplayActivity.class);
         startActivity(intent);
     }
 
     private void goToSettings() {
-        Intent intent = new Intent(this, Settings.class);
+        Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
     }
 }

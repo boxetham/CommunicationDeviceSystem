@@ -16,15 +16,15 @@ public class DisplayPackager {
     private String[] pictureFiles;
     private String[] soundFiles;
     private SoundRecording recording;
-    private Pictures pictures;
+    private PictureManager pictureManager;
 
-    public DisplayPackager(int numTiles, String[] labels, String[] pictureFiles, String[] soundFiles, SoundRecording rec, Pictures pictures){
+    public DisplayPackager(int numTiles, String[] labels, String[] pictureFiles, String[] soundFiles, SoundRecording rec, PictureManager pictureManager){
         this.numTiles = numTiles;
         this.labels = labels;
         this.pictureFiles = pictureFiles;
         this.soundFiles = soundFiles;
         this.recording = rec;
-        this.pictures = pictures;
+        this.pictureManager = pictureManager;
     }
 
     public ArrayList<Byte> getDisplayConfig() {
@@ -47,7 +47,7 @@ public class DisplayPackager {
     }
 
     private ArrayList<Byte> getPicture(int i) {
-        return pictures.readImageFile(pictureFiles[i]);
+        return pictureManager.readImageFile(pictureFiles[i]);
     }
 
     private ArrayList<Byte> getSound(int i) {
@@ -57,6 +57,9 @@ public class DisplayPackager {
     }
 
     private ArrayList<Byte> getLabel(int i) {
+        if(labels[i] == null){
+            return new ArrayList<>();
+        }
         ArrayList<Byte> msg = new ArrayList<>();
         msg.addAll(getByteArrayList(labels[i].length()));
         msg.addAll(getBytesFromString(labels[i]));

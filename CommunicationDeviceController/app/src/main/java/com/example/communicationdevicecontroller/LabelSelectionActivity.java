@@ -7,7 +7,7 @@ import android.text.Editable;
 import android.view.View;
 import android.widget.EditText;
 
-public class LabelSelection extends AppCompatActivity {
+public class LabelSelectionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,14 +29,14 @@ public class LabelSelection extends AppCompatActivity {
     }
 
     private void updateDisplay(Editable text) {
-        ChangeDisplay.currentDisplay.setTempLabel(text.toString());
-        ChangeDisplay.currentDisplay.uploadTemp();
-        Intent intent = new Intent(this, ChangeDisplay.class);
+        ChangeDisplayActivity.currentDisplay.setTempLabel(text.toString());
+        ChangeDisplayActivity.currentDisplay.uploadTemp();
+        Intent intent = new Intent(this, ChangeDisplayActivity.class);
         startActivity(intent);
     }
 
     private void cancel() {
-        Intent intent = new Intent(this, ChangeDisplay.class);
+        Intent intent = new Intent(this, ChangeDisplayActivity.class);
         startActivity(intent);
     }
 }
