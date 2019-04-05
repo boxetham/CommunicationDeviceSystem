@@ -21,16 +21,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LabelSelectionActivity"></activity>
+        <activity android:name=".LabelSelectionActivity" />
         <activity android:name=".SoundSelectionActivity" />
         <activity android:name=".CropActivity" />
-        <activity
-            android:name=".BluetoothActivity"
-            android:screenOrientation="portrait" />
+        <activity android:name=".BluetoothActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -38,7 +35,6 @@
         <activity android:name=".PictureSelectionActivity">
             <intent-filter>
                 <action android:name="android.media.action.IMAGE_CAPTURE" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

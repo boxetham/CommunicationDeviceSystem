@@ -1,12 +1,19 @@
 package com.example.communicationdevicecontroller;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.preference.PreferenceManager;
+
 import static java.lang.Math.min;
 
 public class Display {
 
     private static Display display_instance; //if you have multiple devices this could be a map
                                              //from device name to display to handle multiple devices
+                                             // then you would have getInstance(Context, name)
+    private static PictureManager pictureManager;
+    private static Context context;
     private String labels[];
     private String soundFiles[];
     private Bitmap images[];
@@ -15,8 +22,10 @@ public class Display {
     private String tempSoundFile;
     private Bitmap tempImage;
 
-    public static Display getInstance()
+    public static Display getInstance(Context c)
     {
+        pictureManager = new PictureManager(c);
+        context = c;
         if (display_instance == null) {
             display_instance = new Display();
         }
@@ -27,9 +36,17 @@ public class Display {
     private Display(){
         //load default display
         currentTile = 0;
-        labels = new String[4];
-        soundFiles = new String[4];
-        images = new Bitmap[4];
+        SharedPreferences myPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        int numTiles = myPreferences.getInt("numberTiles",4);
+        labels = new String[numTiles];
+        soundFiles = new String[numTiles];
+        images = new Bitmap[numTiles];
+        for(int i = 0; i < numTiles; i++){
+            labels[i] = myPreferences.getString("label"+i, "");
+            soundFiles[i] = myPreferences.getString("sound"+i, "");
+            String imageFile = myPreferences.getString("image"+i, "");
+            images[i] = pictureManager.getImageBitmap(imageFile);
+        }
     }
 
     public void setTempImage(Bitmap image){
@@ -116,5 +133,18 @@ public class Display {
 
     public int getNumTiles() {
         return images.length;
+    }
+
+    public void updateSaved(){
+        SharedPreferences myPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor myEditor = myPreferences.edit();
+        myEditor.putInt("numberTiles",images.length);
+        for(int i = 0; i < images.length; i++){
+            myEditor.putString("label"+i, labels[i]);
+            myEditor.putString("sound"+i, soundFiles[i]);
+            String imageFile = pictureManager.writeImage(images[i], images.length, i);
+            myEditor.putString("image"+i, imageFile);
+        }
+        myEditor.commit();
     }
 }

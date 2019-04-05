@@ -1,12 +1,9 @@
 package com.example.communicationdevicecontroller;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -17,9 +14,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,7 +64,7 @@ public class ChangeDisplayActivity extends AppCompatActivity {
         labelIds = new int[4][24];
         recorder = new SoundRecording(this);
         pictureSettings = new PictureManager(this);
-        currentDisplay = Display.getInstance();
+        currentDisplay = Display.getInstance(this);
         if (savedInstanceState != null) {
             for(Integer numPics : numPicturesEncoding.keySet()){
                 for(int i = 0; i < numPics; i++){
@@ -190,6 +184,7 @@ public class ChangeDisplayActivity extends AppCompatActivity {
                 changeVisibility(findViewById(R.id.images24), View.VISIBLE);
                 break;
         }
+        updateDisplay();
     }
 
     private void changeVisibility(final View view, final int visibilty){
@@ -250,6 +245,7 @@ public class ChangeDisplayActivity extends AppCompatActivity {
             String picturefile = pictureSettings.writeImage(currentDisplay.getImage(i-1), numPictures, i);
             pictureFiles[i-1] = picturefile;
         }
+        currentDisplay.updateSaved();
         BluetoothActivity.sendDisplay(new DisplayPackager(numPictures, currentDisplay.getLabels(),
                                                     pictureFiles, currentDisplay.getSounds(),
                                                     recorder, pictureSettings));

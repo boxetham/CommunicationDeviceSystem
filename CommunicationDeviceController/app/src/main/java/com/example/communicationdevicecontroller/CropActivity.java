@@ -1,6 +1,7 @@
 package com.example.communicationdevicecontroller;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,7 @@ public class CropActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_crop);
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         cropImageView = (CropperView) findViewById(R.id.CropImageView);
         findViewById(R.id.cropbutton).setOnClickListener(new View.OnClickListener() {

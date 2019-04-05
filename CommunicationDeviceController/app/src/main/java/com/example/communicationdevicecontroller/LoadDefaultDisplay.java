@@ -16,7 +16,7 @@ public class LoadDefaultDisplay {
     }
 
     public void loadDefaultDisplay() {
-        Display currentDisplay = Display.getInstance();
+        Display currentDisplay = Display.getInstance(context);
         PictureManager pictureManager = new PictureManager(context);
         SoundRecording soundRecording = new SoundRecording(context);
         String[] words = new String[]{"yes","no","more","stop"};
