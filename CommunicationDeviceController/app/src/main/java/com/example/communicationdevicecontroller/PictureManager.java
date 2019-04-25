@@ -1,7 +1,9 @@
 package com.example.communicationdevicecontroller;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -67,6 +69,13 @@ public class PictureManager {
                 file.createNewFile();
             }
             fOut = new FileOutputStream(file);
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle("" + imageBitMap.getHeight());
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {                    }
+            });
+            builder.show();
             imageBitMap.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
             fOut.flush(); // Not really required
             fOut.close(); // do not forget to close the stream
@@ -74,6 +83,24 @@ public class PictureManager {
             e.printStackTrace();
         }
         return file.getAbsolutePath();
+    }
+
+    public static Bitmap getResizedBitmap(Bitmap image, int maxSize) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float) width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+        return Bitmap.createScaledBitmap(image,
+                width,
+                height,
+                true);
     }
 
     public Bitmap getImageBitmap(String filename){

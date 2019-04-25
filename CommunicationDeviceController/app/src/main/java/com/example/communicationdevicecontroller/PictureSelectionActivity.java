@@ -131,5 +131,4 @@ public class PictureSelectionActivity extends AppCompatActivity {
                 break;
         }
     }
-
 }

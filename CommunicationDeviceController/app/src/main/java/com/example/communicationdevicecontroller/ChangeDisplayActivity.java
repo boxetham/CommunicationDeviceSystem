@@ -28,8 +28,6 @@ public class ChangeDisplayActivity extends AppCompatActivity {
 
     public static final int WRITE_EXTERNAL = 5;
     private static boolean testDisplay;
-    private SoundRecording recorder;
-    private PictureManager pictureSettings;
     public static Display currentDisplay;
     private int[][] imageIds;
     private int[][] labelIds;
@@ -62,8 +60,6 @@ public class ChangeDisplayActivity extends AppCompatActivity {
     private void setValues(Bundle savedInstanceState) {
         imageIds = new int[4][24];
         labelIds = new int[4][24];
-        recorder = new SoundRecording(this);
-        pictureSettings = new PictureManager(this);
         currentDisplay = Display.getInstance(this);
         if (savedInstanceState != null) {
             for(Integer numPics : numPicturesEncoding.keySet()){
@@ -149,9 +145,9 @@ public class ChangeDisplayActivity extends AppCompatActivity {
             findViewById(id).setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     if(testDisplay){
-                        recorder.startPlaying(currentDisplay.getSound(finalI-1));
+                        currentDisplay.playSound(finalI-1);
                     }else{
-                        currentDisplay.setCurrentTile(finalI);
+                        currentDisplay.setCurrentTile(finalI-1);
                         getImage();
                     }
                 }
@@ -239,15 +235,10 @@ public class ChangeDisplayActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void saveDisplayInfo() {
         int numPictures = currentDisplay.getNumTiles();
-        String[] pictureFiles = new String[numPictures];
         checkPermissions(WRITE_EXTERNAL);
-        for (int i = 1; i <= numPictures; i++) {
-            String picturefile = pictureSettings.writeImage(currentDisplay.getImage(i-1), numPictures, i);
-            pictureFiles[i-1] = picturefile;
-        }
         currentDisplay.updateSaved();
         BluetoothActivity.sendDisplay(new DisplayPackager(numPictures, currentDisplay.getLabels(),
-                                                    pictureFiles, currentDisplay.getSounds(),
-                                                    recorder, pictureSettings));
+                                                    currentDisplay.getImageFiles(), currentDisplay.getSounds(),
+                                                    this));
     }
 }

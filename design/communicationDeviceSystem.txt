@@ -1,0 +1,269 @@
+@startuml
+class BluetoothActivity
+{
++final int REQUEST_ENABLE_BT
++final String SERIAL_SERVICE
++enum BT_STATE
+-ArrayList<BluetoothDevice> _deviceList
+-BluetoothDevice _selectedDevice
+-{static} BluetoothSocket _socket
+-ListView _deviceListView
+-BluetoothAdapter _bluetoothAdapter
+-TextView _tvBtAddress
+-TextView _tvBtName
+-TextView _tvBtState
+-BroadcastReceiver receiver
+-void discoveryStart()
+-void discoveryStop()
+-void bluetoothClose()
+-void bluetoothConnect(BluetoothDevice target)
+-void updateState(BT_STATE target)
+-void startCancelButton(boolean flag)
++{static} void sendSettings(SettingsPackager settingInfo)
++{static} void sendDisplay(DisplayPackager displayInfo)
+-{static} byte[] getbyteArray(ArrayList<Byte> settings)
+}
+class WriteRead{
+-final BluetoothSocket _socket
+-byte[] _message
+-Reader _reader
+-OutputStream output
+-final StringBuilder _stringBuilder
++WriteRead(BluetoothSocket socket, byte[] msg)
++String getResponse()
++void run()
+}
+class BtArrayAdapter
+{
++BtArrayAdapter(Context context, List<BluetoothDevice> deviceList)
++View getView(int position, View convertView, ViewGroup parent)
+}
+BluetoothActivity ..> WriteRead
+
+class ChangeDisplayActivity 
+{
+-{static} Map<Integer, String[]> permissionMap
+-{static} Map<Integer, Integer> numPicturesEncoding
++{static} final int WRITE_EXTERNAL 
+-{static} boolean testDisplay
++{static} Display currentDisplay
+-int[][] imageIds
+-int[][] labelIds
+-void getIds()
+-void getIds(int numPics) 
+-void setValues(Bundle savedInstanceState) 
++void updateDisplay()
+-void configureButtons() 
+-void changeMode() 
+-void setupImageViews()
+-void setupImageViewsHelper(int numPics) 
+-void getImage() 
+-void setNumberOfPictures(int numPics) 
+-void changeVisibility(final View view, final int visibilty)
+-int checkPermissions(int permission) 
++void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) 
++void onSaveInstanceState(Bundle savedInstanceState)
+-void goToMain() 
+-void saveGoToMain()
+-void saveDisplayInfo()
+}
+class CropActivity 
+{
+-CropperView cropImageView;
+-{static} Bitmap image;
+-void rotate(int degrees)
+-void doneCrop()
++{static} void setBitmap(Bitmap bitmap)
++{static} void setPictureSettings(PictureManager pictureManager)
+}
+class Display 
+{
+-{static} Display display_instance
+-{static} Context context
+-String labels[]
+-String soundFiles[]
+-Bitmap images[]
+-String imageFiles[]
+-int currentTile
+-String tempLabel
+-String tempSoundFile
+-Bitmap tempImage
++{static} Display getInstance(Context c)
+-Display()
++void setTempImage(Bitmap image)
++void setTempSound(String soundFile)
++void setTempLabel(String label)
++void uploadTemp()
++void setLabel(String newLabel, int tile)
++void setSoundFile(String newSound, int tile)
++void setImage(Bitmap newImage, int tile)
++void setCurrentTile(int tileNum)
++String[] getSounds()
++Bitmap[] getImages()
++String[] getLabels()
++String[] getImageFiles()
++void copyData(int newNumPics)
++void setDisplay(Bitmap[] newImages, String[] newSoundFiles, String[] newLabels)
++int getNumTiles()
++void updateSaved()
+}
+class DisplayPackager 
+{
+-static Map<Integer, int[]> sizeEncoding
+-int numTiles
+-String[] labels
+-String[] pictureFiles
+-String[] soundFiles
++DisplayPackager(int numTiles, String[] labels, String[] pictureFiles, String[] soundFiles, Context context)
++ArrayList<Byte> getDisplayConfig() 
++ArrayList<Byte> getTile(int i) 
+-ArrayList<Byte> getPicture(int i) 
+-ArrayList<Byte> getSound(int i) 
+-ArrayList<Byte> getLabel(int i) 
+-{static} ArrayList<Byte> getByteArrayList(int num) 
+-{static} ArrayList<Byte> getBytesFromString(String str)
+}
+class LabelSelectionActivity
+{
+-void updateDisplay(Editable text)
+-void cancel()
+}
+class LoadDefaultDisplay 
+{
+-Context context
++LoadDefaultDisplay(Context context)
++void loadDefaultDisplay() 
++Bitmap getBitMap(String name) 
++String getSoundFilePath(String name, SoundRecording soundRecording)
+}
+class MainActivity
+{
+-Dialog myDialog
+-void ShowPopup() 
+-void goToBluetooth() 
+-void goToChangeDisplay() 
+-void goToSettings()
+}
+class PictureManager 
+{
+-Context context
++PictureManager(Context context)
++void doCrop(Bitmap bitmap) 
++File createImageFile() 
++String getPicturesDir() 
++String writeImage(Bitmap imageBitMap, int numPictures, int i) 
++Bitmap getImageBitmap(String filename)
++ArrayList<Byte> readImageFile(String pictureFile) 
++void deleteFile(String filepath)
+}
+class PictureSelectionActivity
+{
+-{static} Map<Integer, String[]> permissionMap
++{static} final int WRITE_EXTERNAL
++{static} final int CROP
++{static} final int CHOOSE_PICTURE 
++{static} final int TAKE_PICTURE 
+-void cancel() 
+-int checkPermissions(int permission)
+}
+class SettingsActivity
+{
+-int volume
+-boolean music
+-boolean vibration
+-TextView currVol
+-void configureButtons() 
+-void configureSwitches()
+-void configureSeekbars() 
+-void getValues() 
+-void saveValues() 
+-void sendValues() 
+-void saveGoToMain() 
+-void goToMain()
+}
+class SettingsPackager 
+{
+-Map<String, Byte> settingsEncoding
+-int volume
+-boolean vibration
+-boolean music
++SettingsPackager(int vol, boolean vib, boolean music)
++ArrayList<Byte> getSetting(String setting) 
+-ArrayList<Byte> getData(String key) 
++Set<String> getSettings() 
+-Byte getSettingEncoding(String setting)
+}
+class SoundRecording 
+{
+-{static} Context context
+-{static} String pathToFolder
+-{static} String testName
+-MediaPlayer mPlayer
+-boolean isRecording 
++SoundRecording(Context context){
+-void onRecord(boolean start) {
+-void onPlay(boolean start) {
++List<String> getSoundRecordings(){
++void startPlaying(String filename) {
+-void stopPlaying() {
+-void startRecording() {
+-void stopRecording() {
++PlayButton getPlayButton(Context context) {
++RecordButton getRecordButton(Context context) {
++void setName(String filename) {
++String getName() {
+-String getFile(String filename) {
++ArrayList<Byte> readSoundFile(String soundFile) {
++String writeSoundFile(InputStream inputStream, String filename)
+}
+class SoundSelectionActivity 
+{
+-{static} Map<Integer, String[]> permissionMap
++{static} final int WRITE_EXTERNAL
++{static} final int RECORD_AUDIO
+-SoundRecording recorder
+-void cancel() 
+-void listSoundFiles() 
+-void back() 
+-void setSelectedSound(String filename)
+-void selectFileFirst() 
+-void getFileName()
+-void showRecordingOptions() 
+-void next(String filename) 
+-void changeVisibility(final View view, final int visibilty)
+-int checkPermissions(int permission)
+}
+DisplayPackager <.. BluetoothActivity
+SettingsPackager <.. BluetoothActivity
+DisplayPackager <.. ChangeDisplayActivity
+SettingsPackager <.. SettingsActivity
+SettingsActivity ..> BluetoothActivity
+ChangeDisplayActivity ..> BluetoothActivity
+MainActivity ..> LoadDefaultDisplay
+MainActivity ..> ChangeDisplayActivity
+MainActivity ..> BluetoothActivity
+MainActivity ..> SettingsActivity
+MainActivity <.. LoadDefaultDisplay
+MainActivity <.. ChangeDisplayActivity
+MainActivity <.. BluetoothActivity
+MainActivity <.. SettingsActivity
+LoadDefaultDisplay ..> Display
+ChangeDisplayActivity --> Display
+ChangeDisplayActivity ..> PictureSelectionActivity
+PictureSelectionActivity ..> CropActivity
+PictureSelectionActivity ..> SoundSelectionActivity
+SoundSelectionActivity ..> LabelSelectionActivity
+LabelSelectionActivity ..> ChangeDisplayActivity
+SoundSelectionActivity --> SoundRecording
+PictureSelectionActivity --> PictureManager
+BluetoothActivity --> BtArrayAdapter
+Display --> PictureManager
+Display --> SoundRecording
+DisplayPackager --> PictureManager
+DisplayPackager --> SoundRecording
+LoadDefaultDisplay ..> PictureManager
+LoadDefaultDisplay ..> SoundRecording
+PictureSelectionActivity ..> Display
+SoundSelectionActivity ..> Display
+LabelSelectionActivity ..> Display
+@enduml

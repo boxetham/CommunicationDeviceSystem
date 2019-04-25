@@ -13,10 +13,12 @@ public class Display {
                                              //from device name to display to handle multiple devices
                                              // then you would have getInstance(Context, name)
     private static PictureManager pictureManager;
+    private static SoundRecording soundRecording;
     private static Context context;
     private String labels[];
     private String soundFiles[];
     private Bitmap images[];
+    private String imageFiles[];
     private int currentTile;
     private String tempLabel;
     private String tempSoundFile;
@@ -25,6 +27,7 @@ public class Display {
     public static Display getInstance(Context c)
     {
         pictureManager = new PictureManager(c);
+        soundRecording = new SoundRecording(c);
         context = c;
         if (display_instance == null) {
             display_instance = new Display();
@@ -41,6 +44,7 @@ public class Display {
         labels = new String[numTiles];
         soundFiles = new String[numTiles];
         images = new Bitmap[numTiles];
+        imageFiles = new String[numTiles];
         for(int i = 0; i < numTiles; i++){
             labels[i] = myPreferences.getString("label"+i, "");
             soundFiles[i] = myPreferences.getString("sound"+i, "");
@@ -62,32 +66,19 @@ public class Display {
     }
 
     public void uploadTemp(){
-        //tiles number 1 to no. tiles, array index will be one less
-        if(currentTile > 0 && currentTile < labels.length) {
-            labels[currentTile - 1] = tempLabel;
-            images[currentTile - 1] = tempImage;
-            soundFiles[currentTile - 1] = tempSoundFile;
+        if(currentTile >= 0 && currentTile < labels.length) {
+            labels[currentTile] = tempLabel;
+            images[currentTile ] = tempImage;
+            soundFiles[currentTile] = tempSoundFile;
         }
-    }
-
-    public void setLabel(String newLabel, int tile){
-        labels[tile] = newLabel;
-    }
-
-    public void setSoundFile(String newSound, int tile){
-        soundFiles[tile] = newSound;
-    }
-
-    public void setImage(Bitmap newImage, int tile){
-        images[tile] = newImage;
     }
 
     public void setCurrentTile(int tileNum) {
         currentTile = tileNum;
     }
 
-    public String getSound(int i) {
-        return soundFiles[i];
+    public void playSound(int i) {
+        soundRecording.startPlaying(soundFiles[i]);
     }
 
     public Bitmap getImage(int i) {
@@ -100,10 +91,6 @@ public class Display {
 
     public String[] getSounds() {
         return soundFiles;
-    }
-
-    public Bitmap[] getImages() {
-        return images;
     }
 
     public String[] getLabels() {
@@ -129,6 +116,7 @@ public class Display {
         soundFiles = newSoundFiles;
         images = newImages;
         labels = newLabels;
+        imageFiles = new String[images.length];
     }
 
     public int getNumTiles() {
@@ -142,9 +130,17 @@ public class Display {
         for(int i = 0; i < images.length; i++){
             myEditor.putString("label"+i, labels[i]);
             myEditor.putString("sound"+i, soundFiles[i]);
-            String imageFile = pictureManager.writeImage(images[i], images.length, i);
-            myEditor.putString("image"+i, imageFile);
+            myEditor.putString("image"+i, imageFiles[i]);
         }
         myEditor.commit();
+    }
+
+    public String[] getImageFiles() {
+        int numPictures = getNumTiles();
+        for (int i = 0; i < numPictures; i++) {
+            String picturefile = pictureManager.writeImage(getImage(i), numPictures, i);
+            imageFiles[i] = picturefile;
+        }
+        return imageFiles;
     }
 }

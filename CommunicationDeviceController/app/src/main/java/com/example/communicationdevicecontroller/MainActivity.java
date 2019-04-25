@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void ShowPopup() {
+    private void ShowPopup() {
         myDialog.setContentView(R.layout.popup_reset_to_default);
         myDialog.findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

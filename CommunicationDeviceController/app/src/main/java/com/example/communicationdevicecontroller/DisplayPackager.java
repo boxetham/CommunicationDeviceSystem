@@ -1,5 +1,7 @@
 package com.example.communicationdevicecontroller;
 
+import android.content.Context;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,13 +20,13 @@ public class DisplayPackager {
     private SoundRecording recording;
     private PictureManager pictureManager;
 
-    public DisplayPackager(int numTiles, String[] labels, String[] pictureFiles, String[] soundFiles, SoundRecording rec, PictureManager pictureManager){
+    public DisplayPackager(int numTiles, String[] labels, String[] pictureFiles, String[] soundFiles, Context context){
         this.numTiles = numTiles;
         this.labels = labels;
         this.pictureFiles = pictureFiles;
         this.soundFiles = soundFiles;
-        this.recording = rec;
-        this.pictureManager = pictureManager;
+        this.recording = new SoundRecording(context);
+        this.pictureManager = new PictureManager(context);
     }
 
     public ArrayList<Byte> getDisplayConfig() {

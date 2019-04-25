@@ -35,7 +35,7 @@ public class CropActivity extends AppCompatActivity {
         ((SeekBar)findViewById(R.id.skbarRotate)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                rotate(progress);
+                rotate(progress*45);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {            }
