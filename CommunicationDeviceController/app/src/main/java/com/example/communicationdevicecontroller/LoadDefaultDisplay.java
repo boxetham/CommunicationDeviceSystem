@@ -25,10 +25,11 @@ public class LoadDefaultDisplay {
             images[i] = getBitMap(words[i] + "image");
         }
         currentDisplay.setDisplay(images, soundFiles, words);
-//        DisplayPackager packager = new DisplayPackager(words.length, words, imageFiles, soundFiles, context);
+        currentDisplay.updateSaved();
         BluetoothActivity.sendDisplay(new DisplayPackager(words.length, currentDisplay.getLabels(),
                 currentDisplay.getImageFiles(), currentDisplay.getSounds(),
                 context));
+//        DisplayPackager packager = new DisplayPackager(words.length, words, imageFiles, soundFiles, context);
 //        BluetoothActivity.sendDisplay(packager);
     }
 

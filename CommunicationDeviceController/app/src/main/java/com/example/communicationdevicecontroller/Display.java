@@ -110,6 +110,7 @@ public class Display {
         soundFiles = newSoundBites;
         labels = newLabels;
         images = newImages;
+        imageFiles = new String[newNumPics];
     }
 
     public void setDisplay(Bitmap[] newImages, String[] newSoundFiles, String[] newLabels) {
@@ -126,6 +127,7 @@ public class Display {
     public void updateSaved(){
         SharedPreferences myPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor myEditor = myPreferences.edit();
+        imageFiles = getImageFiles();
         myEditor.putInt("numberTiles",images.length);
         for(int i = 0; i < images.length; i++){
             myEditor.putString("label"+i, labels[i]);
@@ -133,6 +135,22 @@ public class Display {
             myEditor.putString("image"+i, imageFiles[i]);
         }
         myEditor.commit();
+    }
+
+    public void discardChanges() {
+        currentTile = 0;
+        SharedPreferences myPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        int numTiles = myPreferences.getInt("numberTiles",4);
+        labels = new String[numTiles];
+        soundFiles = new String[numTiles];
+        images = new Bitmap[numTiles];
+        imageFiles = new String[numTiles];
+        for(int i = 0; i < numTiles; i++){
+            labels[i] = myPreferences.getString("label"+i, "");
+            soundFiles[i] = myPreferences.getString("sound"+i, "");
+            String imageFile = myPreferences.getString("image"+i, "");
+            images[i] = pictureManager.getImageBitmap(imageFile);
+        }
     }
 
     public String[] getImageFiles() {

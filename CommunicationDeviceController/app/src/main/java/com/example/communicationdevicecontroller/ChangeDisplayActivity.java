@@ -102,7 +102,9 @@ public class ChangeDisplayActivity extends AppCompatActivity {
             }
         });
         findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { goToMain();
+            public void onClick(View v) {
+                currentDisplay.discardChanges();
+                goToMain();
             }
         });
         findViewById(R.id.btUpload).setOnClickListener(new View.OnClickListener() {
