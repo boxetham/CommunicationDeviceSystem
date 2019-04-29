@@ -22,6 +22,7 @@ import java.util.Date;
 public class PictureManager {
 
     private Context context;
+    private static final long DESIRED_FILE_SIZE = 10000;
 
     public PictureManager(Context context){
         this.context = context;
@@ -69,31 +70,15 @@ public class PictureManager {
                 file.createNewFile();
             }
             fOut = new FileOutputStream(file);
-            imageBitMap.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+            long KB = imageBitMap.getByteCount()/1024;
+            int compression = (int)Math.min(100, (DESIRED_FILE_SIZE*100)/KB);
+            imageBitMap.compress(Bitmap.CompressFormat.JPEG, compression, fOut);
             fOut.flush(); // Not really required
             fOut.close(); // do not forget to close the stream
         } catch (Exception e) {
             e.printStackTrace();
         }
         return file.getAbsolutePath();
-    }
-
-    public static Bitmap getResizedBitmap(Bitmap image, int maxSize) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        float bitmapRatio = (float) width / (float) height;
-        if (bitmapRatio > 1) {
-            width = maxSize;
-            height = (int) (width / bitmapRatio);
-        } else {
-            height = maxSize;
-            width = (int) (height * bitmapRatio);
-        }
-        return Bitmap.createScaledBitmap(image,
-                width,
-                height,
-                true);
     }
 
     public Bitmap getImageBitmap(String filename){
