@@ -1,9 +1,13 @@
 package com.example.communicationdevicecontroller;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
+
+import java.util.HashMap;
 
 import static java.lang.Math.min;
 
@@ -23,6 +27,7 @@ public class Display {
     private String tempLabel;
     private String tempSoundFile;
     private Bitmap tempImage;
+    private HashMap<Integer, Display> oldDisplays;
 
     public static Display getInstance(Context c)
     {
@@ -38,6 +43,7 @@ public class Display {
 
     private Display(){
         //load default display
+        oldDisplays = new HashMap<>();
         currentTile = 0;
         SharedPreferences myPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         int numTiles = myPreferences.getInt("numberTiles",4);
@@ -51,6 +57,13 @@ public class Display {
             String imageFile = myPreferences.getString("image"+i, "");
             images[i] = pictureManager.getImageBitmap(imageFile);
         }
+    }
+
+    private Display(String labels[], String soundFiles[], Bitmap images[], String imageFiles[]){
+        this.labels = labels;
+        this.soundFiles = soundFiles;
+        this.imageFiles = imageFiles;
+        this.images = images;
     }
 
     public void setTempImage(Bitmap image){
@@ -89,16 +102,15 @@ public class Display {
         return labels[i];
     }
 
-    public String[] getSounds() {
-        return soundFiles;
-    }
+    public String[] getSounds() { return soundFiles; }
 
-    public String[] getLabels() {
-        return labels;
-    }
+    public String[] getLabels() { return labels; }
+
+    public Bitmap[] getImages() { return images; }
 
     public void copyData(int newNumPics) {
         int oldNumPics = getNumTiles();
+        //update current display
         String[] newSoundBites = new String[newNumPics];
         String[] newLabels = new String[newNumPics];
         Bitmap[] newImages = new Bitmap[newNumPics];
@@ -111,6 +123,21 @@ public class Display {
         labels = newLabels;
         images = newImages;
         imageFiles = new String[newNumPics];
+        checkForOldDisplayInfo(oldNumPics);
+    }
+
+    private void checkForOldDisplayInfo(int oldNumTiles) {
+        Display oldDisplay = oldDisplays.get(getNumTiles());
+        if(oldDisplay !=null){
+            String[] oldSoundFiles = oldDisplay.getSounds();
+            String[] oldLabels = oldDisplay.getLabels();
+            Bitmap[] oldImages = oldDisplay.getImages();
+            for(int i = oldNumTiles; i < oldDisplay.getNumTiles(); i++){
+                soundFiles[i] = oldSoundFiles[i];
+                labels[i] = oldLabels[i];
+                images[i] = oldImages[i];
+            }
+        }
     }
 
     public void setDisplay(Bitmap[] newImages, String[] newSoundFiles, String[] newLabels) {
@@ -125,6 +152,9 @@ public class Display {
     }
 
     public void updateSaved(){
+        int numTiles = getNumTiles();
+        Display oldDisplay = new Display(labels, soundFiles, images, imageFiles);
+        oldDisplays.put(numTiles, oldDisplay);
         SharedPreferences myPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor myEditor = myPreferences.edit();
         imageFiles = getImageFiles();
