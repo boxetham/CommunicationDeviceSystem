@@ -29,8 +29,6 @@ public class LoadDefaultDisplay {
         BluetoothActivity.sendDisplay(new DisplayPackager(words.length, currentDisplay.getLabels(),
                 currentDisplay.getImageFiles(), currentDisplay.getSounds(),
                 context));
-//        DisplayPackager packager = new DisplayPackager(words.length, words, imageFiles, soundFiles, context);
-//        BluetoothActivity.sendDisplay(packager);
     }
 
     public Bitmap getBitMap(String name) {
