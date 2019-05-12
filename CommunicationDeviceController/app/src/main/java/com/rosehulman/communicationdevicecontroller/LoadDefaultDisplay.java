@@ -1,4 +1,4 @@
-package com.example.communicationdevicecontroller;
+package com.rosehulman.communicationdevicecontroller;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -16,12 +16,12 @@ public class LoadDefaultDisplay {
 
     public void loadDefaultDisplay() {
         Display currentDisplay = Display.getInstance(context);
-        SoundRecording soundRecording = new SoundRecording(context);
+        SoundManager soundManager = new SoundManager(context);
         String[] words = new String[]{"yes","no","more","stop"};
         String[] soundFiles = new String[words.length];
         Bitmap[] images = new Bitmap[words.length];
         for(int i = 0; i < words.length; i++){
-            soundFiles[i] = getSoundFilePath(words[i] + "sound", soundRecording);
+            soundFiles[i] = getSoundFilePath(words[i] + "sound", soundManager);
             images[i] = getBitMap(words[i] + "image");
         }
         currentDisplay.setDisplay(images, soundFiles, words);
@@ -40,9 +40,9 @@ public class LoadDefaultDisplay {
         return bmp;
     }
 
-    public String getSoundFilePath(String name, SoundRecording soundRecording){
+    public String getSoundFilePath(String name, SoundManager soundManager){
         InputStream bm = context.getResources().openRawResource(context.getResources().getIdentifier(name,
                 "raw", context.getPackageName()));
-        return soundRecording.writeSoundFile(bm, name);
+        return soundManager.writeSoundFile(bm, name);
     }
 }

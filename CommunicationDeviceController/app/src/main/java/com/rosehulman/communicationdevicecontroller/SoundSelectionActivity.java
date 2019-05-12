@@ -1,4 +1,4 @@
-package com.example.communicationdevicecontroller;
+package com.rosehulman.communicationdevicecontroller;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -31,13 +31,13 @@ public class SoundSelectionActivity extends AppCompatActivity {
     }};
     public static final int WRITE_EXTERNAL = 5;
     public static final int RECORD_AUDIO = 3;
-    private SoundRecording recorder;
+    private SoundManager recorder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sound_selection);
-        recorder = new SoundRecording(this);
+        recorder = new SoundManager(this);
         findViewById(R.id.btBack).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,7 +133,7 @@ public class SoundSelectionActivity extends AppCompatActivity {
 
     private void getFileName(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Enter name for sound file with noimage spaces");
+        builder.setTitle("Enter name for sound file with no spaces");
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
@@ -152,10 +152,10 @@ public class SoundSelectionActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 0);
-        SoundRecording.RecordButton mRecordButton = recorder.getRecordButton(this);
+        SoundManager.RecordButton mRecordButton = recorder.getRecordButton(this);
         LinearLayout ll = findViewById(R.id.buttonLayout);
         ll.addView(mRecordButton, params);
-        SoundRecording.PlayButton mPlayButton = recorder.getPlayButton(this);
+        SoundManager.PlayButton mPlayButton = recorder.getPlayButton(this);
         ll.addView(mPlayButton, params);
         changeVisibility(findViewById(R.id.btNext), View.VISIBLE);
         findViewById(R.id.btNext).setOnClickListener(new View.OnClickListener() {
@@ -188,6 +188,7 @@ public class SoundSelectionActivity extends AppCompatActivity {
     private int checkPermissions(int permission) {
         if(ActivityCompat.checkSelfPermission(this, permissionMap.get(permission)[0]) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, permissionMap.get(permission), permission);
+            return 1;
         }
         return 0;
     }

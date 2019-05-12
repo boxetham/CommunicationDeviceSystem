@@ -1,4 +1,4 @@
-package com.example.communicationdevicecontroller;
+package com.rosehulman.communicationdevicecontroller;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -19,7 +19,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SoundRecording {
+public class SoundManager {
 
     private static Context context;
     private static String pathToFolder = null;
@@ -28,7 +28,7 @@ public class SoundRecording {
     private MediaPlayer mPlayer = null;
     private boolean isRecording = false;
 
-    public SoundRecording(Context context){
+    public SoundManager(Context context){
         this.context = context;
         pathToFolder = context.getExternalCacheDir().getAbsolutePath();
         testName = "audiorecordtest";
@@ -147,7 +147,7 @@ public class SoundRecording {
 
     public String writeSoundFile(InputStream inputStream, String filename) {
         String filepath = getFile(filename);
-        File file = new File(Environment.getExternalStorageDirectory() + File.separator + filepath);
+        File file = new File(filepath);
         BufferedInputStream in = new BufferedInputStream(inputStream);
         int read;
         byte[] buff = new byte[1024];

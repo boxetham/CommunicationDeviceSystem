@@ -1,4 +1,4 @@
-package com.example.communicationdevicecontroller;
+package com.rosehulman.communicationdevicecontroller;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -15,7 +15,7 @@ public class Display {
                                              //from device name to display to handle multiple devices
                                              // then you would have getInstance(Context, name)
     private static PictureManager pictureManager;
-    private static SoundRecording soundRecording;
+    private static SoundManager soundManager;
     private static Context context;
     private String labels[];
     private String soundFiles[];
@@ -30,7 +30,7 @@ public class Display {
     public static Display getInstance(Context c)
     {
         pictureManager = new PictureManager(c);
-        soundRecording = new SoundRecording(c);
+        soundManager = new SoundManager(c);
         context = c;
         if (display_instance == null) {
             display_instance = new Display();
@@ -89,7 +89,7 @@ public class Display {
     }
 
     public void playSound(int i) {
-        soundRecording.startPlaying(soundFiles[i]);
+        soundManager.startPlaying(soundFiles[i]);
     }
 
     public Bitmap getImage(int i) {

@@ -1,4 +1,4 @@
-package com.example.communicationdevicecontroller;
+package com.rosehulman.communicationdevicecontroller;
 
 import android.app.Dialog;
 import android.content.Intent;

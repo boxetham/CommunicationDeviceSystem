@@ -1,4 +1,4 @@
-package com.example.communicationdevicecontroller;
+package com.rosehulman.communicationdevicecontroller;
 
 import android.Manifest;
 import android.app.Activity;
@@ -79,6 +79,7 @@ public class PictureSelectionActivity extends AppCompatActivity {
     private int checkPermissions(int permission) {
         if(ActivityCompat.checkSelfPermission(this, permissionMap.get(permission)[0]) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, permissionMap.get(permission), permission);
+            return 1;
         }
         return 0;
     }

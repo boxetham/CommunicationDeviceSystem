@@ -1,4 +1,4 @@
-package com.example.communicationdevicecontroller;
+package com.rosehulman.communicationdevicecontroller;
 
 import android.content.Context;
 
@@ -17,7 +17,7 @@ public class DisplayPackager {
     private String[] labels;
     private String[] pictureFiles;
     private String[] soundFiles;
-    private SoundRecording recording;
+    private SoundManager recording;
     private PictureManager pictureManager;
 
     public DisplayPackager(int numTiles, String[] labels, String[] pictureFiles, String[] soundFiles, Context context){
@@ -25,7 +25,7 @@ public class DisplayPackager {
         this.labels = labels;
         this.pictureFiles = pictureFiles;
         this.soundFiles = soundFiles;
-        this.recording = new SoundRecording(context);
+        this.recording = new SoundManager(context);
         this.pictureManager = new PictureManager(context);
     }
 

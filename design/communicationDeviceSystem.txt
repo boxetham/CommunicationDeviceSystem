@@ -134,7 +134,7 @@ class LoadDefaultDisplay
 +LoadDefaultDisplay(Context context)
 +void loadDefaultDisplay() 
 +Bitmap getBitMap(String name) 
-+String getSoundFilePath(String name, SoundRecording soundRecording)
++String getSoundFilePath(String name, SoundManager soundManager)
 }
 class MainActivity
 {
@@ -193,14 +193,14 @@ class SettingsPackager
 +Set<String> getSettings() 
 -Byte getSettingEncoding(String setting)
 }
-class SoundRecording 
+class SoundManager 
 {
 -{static} Context context
 -{static} String pathToFolder
 -{static} String testName
 -MediaPlayer mPlayer
 -boolean isRecording 
-+SoundRecording(Context context){
++SoundManager(Context context){
 -void onRecord(boolean start) {
 -void onPlay(boolean start) {
 +List<String> getSoundRecordings(){
@@ -221,7 +221,7 @@ class SoundSelectionActivity
 -{static} Map<Integer, String[]> permissionMap
 +{static} final int WRITE_EXTERNAL
 +{static} final int RECORD_AUDIO
--SoundRecording recorder
+-SoundManager manager
 -void cancel() 
 -void listSoundFiles() 
 -void back() 
@@ -254,15 +254,15 @@ PictureSelectionActivity ..> CropActivity
 PictureSelectionActivity ..> SoundSelectionActivity
 SoundSelectionActivity ..> LabelSelectionActivity
 LabelSelectionActivity ..> ChangeDisplayActivity
-SoundSelectionActivity --> SoundRecording
+SoundSelectionActivity --> SoundManager
 PictureSelectionActivity --> PictureManager
 BluetoothActivity --> BtArrayAdapter
 Display --> PictureManager
-Display --> SoundRecording
+Display --> SoundManager
 DisplayPackager --> PictureManager
-DisplayPackager --> SoundRecording
+DisplayPackager --> SoundManager
 LoadDefaultDisplay ..> PictureManager
-LoadDefaultDisplay ..> SoundRecording
+LoadDefaultDisplay ..> SoundManager
 PictureSelectionActivity ..> Display
 SoundSelectionActivity ..> Display
 LabelSelectionActivity ..> Display
